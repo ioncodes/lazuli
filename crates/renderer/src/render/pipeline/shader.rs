@@ -161,22 +161,22 @@ fn vertex_stage(texgen: &TexGenConfig) -> wesl::syntax::GlobalDeclaration {
     ] = stages.try_into().unwrap();
 
     let compute_stages = wesl_quote::quote_statement!({
-        @#s0 {}
-        @#s1 {}
-        @#s2 {}
-        @#s3 {}
-        @#s4 {}
-        @#s5 {}
-        @#s6 {}
-        @#s7 {}
-        @#s8 {}
-        @#s9 {}
-        @#s10 {}
-        @#s11 {}
-        @#s12 {}
-        @#s13 {}
-        @#s14 {}
-        @#s15 {}
+        #stmt@s0 {}
+        #stmt@s1 {}
+        #stmt@s2 {}
+        #stmt@s3 {}
+        #stmt@s4 {}
+        #stmt@s5 {}
+        #stmt@s6 {}
+        #stmt@s7 {}
+        #stmt@s8 {}
+        #stmt@s9 {}
+        #stmt@s10 {}
+        #stmt@s11 {}
+        #stmt@s12 {}
+        #stmt@s13 {}
+        #stmt@s14 {}
+        #stmt@s15 {}
     });
 
     wesl_quote::quote_declaration! {
@@ -211,7 +211,7 @@ fn vertex_stage(texgen: &TexGenConfig) -> wesl::syntax::GlobalDeclaration {
             );
 
             var tex_coords: array<vec3f, 8>;
-            @#compute_stages {}
+            #stmt@compute_stages {}
 
             out.tex_coord0 = tex_coords[0];
             out.tex_coord1 = tex_coords[1];
@@ -237,8 +237,8 @@ fn fragment_stage(texenv: &TexEnvConfig) -> wesl::syntax::GlobalDeclaration {
 
         stages.push(wesl_quote::quote_statement! {
             {
-                @#color {}
-                @#alpha {}
+                #stmt@color {}
+                #stmt@alpha {}
             }
         });
     }
@@ -264,22 +264,22 @@ fn fragment_stage(texenv: &TexEnvConfig) -> wesl::syntax::GlobalDeclaration {
     ] = stages.try_into().unwrap();
 
     let compute_stages = wesl_quote::quote_statement!({
-        @#s0 {}
-        @#s1 {}
-        @#s2 {}
-        @#s3 {}
-        @#s4 {}
-        @#s5 {}
-        @#s6 {}
-        @#s7 {}
-        @#s8 {}
-        @#s9 {}
-        @#s10 {}
-        @#s11 {}
-        @#s12 {}
-        @#s13 {}
-        @#s14 {}
-        @#s15 {}
+        #stmt@s0 {}
+        #stmt@s1 {}
+        #stmt@s2 {}
+        #stmt@s3 {}
+        #stmt@s4 {}
+        #stmt@s5 {}
+        #stmt@s6 {}
+        #stmt@s7 {}
+        #stmt@s8 {}
+        #stmt@s9 {}
+        #stmt@s10 {}
+        #stmt@s11 {}
+        #stmt@s12 {}
+        #stmt@s13 {}
+        #stmt@s14 {}
+        #stmt@s15 {}
     });
 
     let alpha_test = texenv::alpha::compute_test(&texenv.alpha_test);
@@ -295,7 +295,7 @@ fn fragment_stage(texenv: &TexEnvConfig) -> wesl::syntax::GlobalDeclaration {
             var regs: array<vec4f, 4> = config.regs;
             var consts: array<vec4f, 4> = config.consts;
 
-            @#compute_stages {}
+            #stmt@compute_stages {}
 
             let color = regs[last_color_output].rgb;
             let alpha = regs[last_alpha_output].a;
@@ -317,8 +317,8 @@ fn fragment_stage(texenv: &TexEnvConfig) -> wesl::syntax::GlobalDeclaration {
             out.color = out.blend;
 
             var frag_depth = 1.0 - in.clip.z;
-            @#depth_texture {}
-            @#fog {}
+            #stmt@depth_texture {}
+            #stmt@fog {}
 
             return out;
         }

@@ -203,8 +203,8 @@ pub fn compute_fog(config: &TexEnvConfig) -> wesl::syntax::Statement {
     quote_statement! {
         {
             var distance: f32;
-            @#distance {}
-            @#adjust {}
+            #stmt@distance {}
+            #stmt@adjust {}
             out.color = mix(out.color, config.fog.color, distance);
         }
     }

@@ -65,7 +65,6 @@ bitos = { git = "https://github.com/vxpm/bitos.git", features = ["zerocopy"] }
 bitut = { git = "https://github.com/vxpm/bitut.git" }
 bitvec = "1.0"
 bytesize = "2"
-ciborium = "0.2"
 clap = { version = "4.5", features = ["derive"] }
 cranelift = { version = "0.135", features = ["frontend", "native"] }
 cranelift-codegen = {
@@ -122,7 +121,7 @@ twox-hash = {
   ]
 }
 wesl = {
-  git = "https://github.com/wgsl-tooling-wg/wesl-rs",
+  version = "0.4.4",
   default-features = false,
   features = [
     "eval",
@@ -130,8 +129,7 @@ wesl = {
   ]
 }
 wesl-quote = {
-  git = "https://github.com/wgsl-tooling-wg/wesl-rs",
-  rev = "c160f88"
+  version = "0.4.4",
 }
 wgpu = { version = "30.0", default-features = false, features = ["counters"] }
 windows = {

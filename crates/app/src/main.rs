@@ -1,4 +1,5 @@
 #![feature(trim_prefix_suffix)]
+#![recursion_limit = "256"]
 
 mod cli;
 mod runner;

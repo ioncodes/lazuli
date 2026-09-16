@@ -1,6 +1,3 @@
-#![feature(debug_closure_helpers)]
-#![feature(maybe_uninit_array_assume_init)]
-
 mod builder;
 mod cache;
 mod module;
