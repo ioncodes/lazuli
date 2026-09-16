@@ -143,6 +143,16 @@ there's multiple other ways you could help:
 If you're interested, **please** read [the contribution guidelines](./CONTRIBUTING.md) before getting
 started.
 
+# Sister projects
+
+These projects are part of Lazuli's family:
+
+- [solstice](https://codeberg.org/equinox-emu/solstice) (by hazelwiss)
+- [gecko](https://github.com/ioncodes/gecko) (by layle)
+- [beanwii](https://github.com/zaydlang/beanwii) (by zayd)
+
+All of them helped Lazuli be what it is. Check them out!
+
 # Random Q&A
 
 Here's some random questions and their answers. I'd call this a FAQ but no one has ever asked these
@@ -150,8 +160,8 @@ questions so I'm not sure it would be appropriate :p
 
 ## Is there any reason I should use this over Dolphin?
 
-No, not yet. Dolphin is a thousand times more mature and what you should use if you want to actually
-play games.
+No, not yet (and probably never). Dolphin is a thousand times more mature and what you should use if
+you want to actually play games.
 
 ## Is this a reimplementation of Dolphin in Rust?
 
@@ -161,6 +171,11 @@ No, this is built from the ground up. No dolphin code is reused/stolen/whatever.
 
 Not yet. It's a long-term goal, since the Wii is very similar to the GameCube. There's currently no
 infrastructure for it, though.
+
+### UPDATE 2026-09-16:
+
+I'm currently not working on Lazuli actively, as I'm focsued on a new emulator project (switch!). I 
+do still plan to work on Wii support in the future, but it's a distant dream.
 
 ## What is `hemisphere`?
 
