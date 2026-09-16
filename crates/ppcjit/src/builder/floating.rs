@@ -56,7 +56,7 @@ impl BlockBuilder<'_> {
         let float = self
             .bd
             .ins()
-            .bitcast(ir::types::F64, ir::MemFlags::new(), int64);
+            .bitcast(ir::types::F64, ir::MemFlagsData::new(), int64);
         let vector = self.bd.ins().scalar_to_vector(ir::types::F64X2, float);
         self.set(ins.fpr_d(), vector);
 
@@ -81,7 +81,7 @@ impl BlockBuilder<'_> {
         let float = self
             .bd
             .ins()
-            .bitcast(ir::types::F64, ir::MemFlags::new(), int64);
+            .bitcast(ir::types::F64, ir::MemFlagsData::new(), int64);
         let vector = self.bd.ins().scalar_to_vector(ir::types::F64X2, float);
         self.set(ins.fpr_d(), vector);
 
@@ -331,7 +331,7 @@ impl BlockBuilder<'_> {
         let float = self
             .bd
             .ins()
-            .bitcast(ir::types::F64, ir::MemFlags::new(), extended);
+            .bitcast(ir::types::F64, ir::MemFlagsData::new(), extended);
         let paired = self.bd.ins().splat(ir::types::F64X2, float);
 
         self.set(ins.fpr_d(), paired);
@@ -384,11 +384,11 @@ impl BlockBuilder<'_> {
         let mask = self
             .bd
             .ins()
-            .bitcast(ir::types::F64X2, ir::MemFlags::new(), mask);
+            .bitcast(ir::types::F64X2, ir::MemFlagsData::new(), mask);
         let mask_inverse =
             self.bd
                 .ins()
-                .bitcast(ir::types::F64X2, ir::MemFlags::new(), mask_inverse);
+                .bitcast(ir::types::F64X2, ir::MemFlagsData::new(), mask_inverse);
 
         let select_c = self.bd.ins().band(fpr_c, mask);
         let select_b = self.bd.ins().band(fpr_b, mask_inverse);

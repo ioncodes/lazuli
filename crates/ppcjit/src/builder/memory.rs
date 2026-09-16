@@ -92,9 +92,12 @@ impl BlockBuilder<'_> {
         self.exit_with(LOAD_INFO);
 
         self.switch_to_bb(continue_block);
-        self.bd
-            .ins()
-            .stack_load(P::IR_TYPE, self.consts.read_stack_slot, 0)
+        self.bd.ins().stack_load(
+            self.consts.ptr_type,
+            P::IR_TYPE,
+            self.consts.read_stack_slot,
+            0,
+        )
     }
 
     pub fn slow_mem_store<P: ReadWriteAble>(&mut self, addr: ir::Value, value: ir::Value) {
@@ -125,9 +128,12 @@ impl BlockBuilder<'_> {
     }
 
     pub fn mem_load<P: ReadWriteAble>(&mut self, addr: ir::Value) -> ir::Value {
-        let lut_index = self.bd.ins().ushr_imm(addr, 17);
+        let lut_index = self.bd.ins().ushr_imm_u(addr, 17);
         let lut_index = self.bd.ins().uextend(self.consts.ptr_type, lut_index);
-        let lut_offset = self.bd.ins().imul_imm(lut_index, size_of::<usize>() as i64);
+        let lut_offset = self
+            .bd
+            .ins()
+            .imul_imm_u(lut_index, size_of::<usize>() as i64);
 
         let lut_ptr = self.bd.ins().iadd(self.consts.fmem_ptr, lut_offset);
         let ptr = self
@@ -147,7 +153,7 @@ impl BlockBuilder<'_> {
 
         // fast
         self.switch_to_bb(fast_block);
-        let offset = self.bd.ins().band_imm(addr, (1 << 17) - 1);
+        let offset = self.bd.ins().band_imm_u(addr, (1 << 17) - 1);
         let offset = self.bd.ins().uextend(self.consts.ptr_type, offset);
         let ptr = self.bd.ins().iadd(ptr, offset);
         let value = self.bd.ins().load(P::IR_TYPE, MEMFLAGS, ptr, 0);
@@ -175,9 +181,12 @@ impl BlockBuilder<'_> {
     }
 
     pub fn mem_store<P: ReadWriteAble>(&mut self, addr: ir::Value, value: ir::Value) {
-        let lut_index = self.bd.ins().ushr_imm(addr, 17);
+        let lut_index = self.bd.ins().ushr_imm_u(addr, 17);
         let lut_index = self.bd.ins().uextend(self.consts.ptr_type, lut_index);
-        let lut_offset = self.bd.ins().imul_imm(lut_index, size_of::<usize>() as i64);
+        let lut_offset = self
+            .bd
+            .ins()
+            .imul_imm_u(lut_index, size_of::<usize>() as i64);
 
         let lut_ptr = self.bd.ins().iadd(self.consts.fmem_ptr, lut_offset);
         let ptr = self
@@ -196,7 +205,7 @@ impl BlockBuilder<'_> {
 
         // fast
         self.switch_to_bb(fast_block);
-        let offset = self.bd.ins().band_imm(addr, ((1u64 << 17) - 1) as i64);
+        let offset = self.bd.ins().band_imm_u(addr, ((1u64 << 17) - 1) as i64);
         let offset = self.bd.ins().uextend(self.consts.ptr_type, offset);
         let ptr = self.bd.ins().iadd(ptr, offset);
         let value_bswap = if P::IR_TYPE != ir::types::I8 {
@@ -248,9 +257,12 @@ impl BlockBuilder<'_> {
 
         self.switch_to_bb(continue_block);
         (
-            self.bd
-                .ins()
-                .stack_load(ir::types::F64, self.consts.read_stack_slot, 0),
+            self.bd.ins().stack_load(
+                self.consts.ptr_type,
+                ir::types::F64,
+                self.consts.read_stack_slot,
+                0,
+            ),
             self.bd.ins().uextend(ir::types::I32, size),
         )
     }
@@ -304,7 +316,7 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         let mut value = self.mem_load::<P>(addr);
@@ -560,14 +572,14 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         for i in ins.field_rd()..32 {
             let value = self.mem_load::<i32>(addr);
             self.set(GPR::new(i), value);
 
-            addr = self.bd.ins().iadd_imm(addr, 4);
+            addr = self.bd.ins().iadd_imm_u(addr, 4);
         }
 
         InstructionInfo {
@@ -597,7 +609,7 @@ impl BlockBuilder<'_> {
 
             let value = self.mem_load::<i8>(addr);
             let value = self.bd.ins().uextend(ir::types::I32, value);
-            let value = self.bd.ins().ishl_imm(value, shift_count as u64 as i64);
+            let value = self.bd.ins().ishl_imm_u(value, shift_count as u64 as i64);
 
             let current = self.get(reg);
             let mask = self.ir_value(0xFFu32 << shift_count);
@@ -607,7 +619,7 @@ impl BlockBuilder<'_> {
             let new = self.bd.ins().bitselect(clear_mask, loaded, zero);
 
             self.set(reg, new);
-            addr = self.bd.ins().iadd_imm(addr, 1);
+            addr = self.bd.ins().iadd_imm_u(addr, 1);
         }
 
         InstructionInfo {
@@ -623,14 +635,14 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         let value = self.mem_load::<i64>(addr);
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::F64, ir::MemFlags::new(), value);
+            .bitcast(ir::types::F64, ir::MemFlagsData::new(), value);
 
         // Double loads replace only PS0; context restore may have already restored PS1.
         let previous = self.get(ins.fpr_d());
@@ -647,14 +659,14 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         let value = self.mem_load::<i64>(addr);
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::F64, ir::MemFlags::new(), value);
+            .bitcast(ir::types::F64, ir::MemFlagsData::new(), value);
 
         let previous = self.get(ins.fpr_d());
         let paired = self.bd.ins().insertlane(previous, value, 0);
@@ -679,7 +691,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::F64, ir::MemFlags::new(), value);
+            .bitcast(ir::types::F64, ir::MemFlagsData::new(), value);
 
         let previous = self.get(ins.fpr_d());
         let paired = self.bd.ins().insertlane(previous, value, 0);
@@ -699,7 +711,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::F64, ir::MemFlags::new(), value);
+            .bitcast(ir::types::F64, ir::MemFlagsData::new(), value);
 
         let previous = self.get(ins.fpr_d());
         let paired = self.bd.ins().insertlane(previous, value, 0);
@@ -716,14 +728,14 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         let value = self.mem_load::<i32>(addr);
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::F32, ir::MemFlags::new(), value);
+            .bitcast(ir::types::F32, ir::MemFlagsData::new(), value);
 
         let double = self.bd.ins().fpromote(ir::types::F64, value);
         let paired = self.bd.ins().splat(ir::types::F64X2, double);
@@ -739,14 +751,14 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         let value = self.mem_load::<i32>(addr);
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::F32, ir::MemFlags::new(), value);
+            .bitcast(ir::types::F32, ir::MemFlagsData::new(), value);
 
         let double = self.bd.ins().fpromote(ir::types::F64, value);
         let paired = self.bd.ins().splat(ir::types::F64X2, double);
@@ -771,7 +783,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::F32, ir::MemFlags::new(), value);
+            .bitcast(ir::types::F32, ir::MemFlagsData::new(), value);
 
         let double = self.bd.ins().fpromote(ir::types::F64, value);
         let paired = self.bd.ins().splat(ir::types::F64X2, double);
@@ -791,7 +803,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::F32, ir::MemFlags::new(), value);
+            .bitcast(ir::types::F32, ir::MemFlagsData::new(), value);
 
         let double = self.bd.ins().fpromote(ir::types::F64, value);
         let paired = self.bd.ins().splat(ir::types::F64X2, double);
@@ -815,7 +827,7 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         let mut value = self.get(ins.gpr_s());
@@ -925,14 +937,14 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         for i in ins.field_rs()..32 {
             let value = self.get(GPR::new(i));
             self.mem_store::<i32>(addr, value);
 
-            addr = self.bd.ins().iadd_imm(addr, 4);
+            addr = self.bd.ins().iadd_imm_u(addr, 4);
         }
 
         InstructionInfo {
@@ -960,11 +972,11 @@ impl BlockBuilder<'_> {
             let shift_count = 8 * (3 - (i as u32 % 4));
 
             let reg = self.get(reg);
-            let value = self.bd.ins().ushr_imm(reg, shift_count as u64 as i64);
+            let value = self.bd.ins().ushr_imm_u(reg, shift_count as u64 as i64);
             let value = self.bd.ins().ireduce(ir::types::I8, value);
 
             self.mem_store::<i8>(addr, value);
-            addr = self.bd.ins().iadd_imm(addr, 1);
+            addr = self.bd.ins().iadd_imm_u(addr, 1);
         }
 
         InstructionInfo {
@@ -980,7 +992,7 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         let value = self.get(ins.fpr_s());
@@ -988,7 +1000,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::I64, ir::MemFlags::new(), value);
+            .bitcast(ir::types::I64, ir::MemFlagsData::new(), value);
 
         self.mem_store::<i64>(addr, value);
 
@@ -1002,7 +1014,7 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         let value = self.get(ins.fpr_s());
@@ -1010,7 +1022,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::I64, ir::MemFlags::new(), value);
+            .bitcast(ir::types::I64, ir::MemFlagsData::new(), value);
 
         self.mem_store::<i64>(addr, value);
         self.set(ins.gpr_a(), addr);
@@ -1034,7 +1046,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::I64, ir::MemFlags::new(), value);
+            .bitcast(ir::types::I64, ir::MemFlagsData::new(), value);
 
         self.mem_store::<i64>(addr, value);
 
@@ -1053,7 +1065,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::I64, ir::MemFlags::new(), value);
+            .bitcast(ir::types::I64, ir::MemFlagsData::new(), value);
 
         self.mem_store::<i64>(addr, value);
         self.set(ins.gpr_a(), addr);
@@ -1068,7 +1080,7 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         let value = self.get(ins.fpr_s());
@@ -1077,7 +1089,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::I32, ir::MemFlags::new(), value);
+            .bitcast(ir::types::I32, ir::MemFlagsData::new(), value);
 
         self.mem_store::<i32>(addr, value);
 
@@ -1091,7 +1103,7 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_offset() as i64)
         };
 
         let value = self.get(ins.fpr_s());
@@ -1100,7 +1112,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::I32, ir::MemFlags::new(), value);
+            .bitcast(ir::types::I32, ir::MemFlagsData::new(), value);
 
         self.mem_store::<i32>(addr, value);
         self.set(ins.gpr_a(), addr);
@@ -1125,7 +1137,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::I32, ir::MemFlags::new(), value);
+            .bitcast(ir::types::I32, ir::MemFlagsData::new(), value);
 
         self.mem_store::<i32>(addr, value);
 
@@ -1145,7 +1157,7 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::I32, ir::MemFlags::new(), value);
+            .bitcast(ir::types::I32, ir::MemFlagsData::new(), value);
 
         self.mem_store::<i32>(addr, value);
         self.set(ins.gpr_a(), addr);
@@ -1169,7 +1181,7 @@ impl BlockBuilder<'_> {
         let int64 = self
             .bd
             .ins()
-            .bitcast(ir::types::I64, ir::MemFlags::new(), fpr_s_ps0);
+            .bitcast(ir::types::I64, ir::MemFlagsData::new(), fpr_s_ps0);
         let int32 = self.bd.ins().ireduce(ir::types::I32, int64);
 
         self.mem_store::<i32>(addr, int32);
@@ -1193,7 +1205,7 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_ps_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_ps_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_ps_offset() as i64)
         };
 
         let gqr = self.get(SPR::GQR[ins.field_ps_i() as usize]);
@@ -1219,7 +1231,7 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_ps_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_ps_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_ps_offset() as i64)
         };
 
         let gqr = self.get(SPR::GQR[ins.field_ps_i() as usize]);
@@ -1301,7 +1313,7 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_ps_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_ps_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_ps_offset() as i64)
         };
 
         let fpr_s = self.get(ins.fpr_s());
@@ -1325,7 +1337,7 @@ impl BlockBuilder<'_> {
             self.ir_value(ins.field_ps_offset() as i32)
         } else {
             let ra = self.get(ins.gpr_a());
-            self.bd.ins().iadd_imm(ra, ins.field_ps_offset() as i64)
+            self.bd.ins().iadd_imm_s(ra, ins.field_ps_offset() as i64)
         };
 
         let fpr_s = self.get(ins.fpr_s());

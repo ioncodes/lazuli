@@ -25,8 +25,8 @@ use crate::{
     NAMESPACE_USER_HOOKS, Sequence,
 };
 
-const MEMFLAGS: ir::MemFlags = ir::MemFlags::new().with_notrap();
-const MEMFLAGS_READONLY: ir::MemFlags = MEMFLAGS.with_can_move().with_readonly();
+const MEMFLAGS: ir::MemFlagsData = ir::MemFlagsData::new().with_notrap();
+const MEMFLAGS_READONLY: ir::MemFlagsData = MEMFLAGS.with_can_move().with_readonly();
 
 // NOTE: make sure to keep this up to date if anything else is not just 32 bits
 fn reg_ir_ty(reg: Reg) -> ir::Type {
@@ -456,13 +456,13 @@ impl<'ctx> BlockBuilder<'ctx> {
             tls: false,
         });
 
-        self.bd.ins().global_value(self.consts.ptr_type, exit_data)
+        self.bd.ins().symbol_value(self.consts.ptr_type, exit_data)
     }
 
     fn branch_exit_reason(&mut self, meta: BranchMeta, address: ir::Value) -> ir::Value {
         let reason = ExitReason::from_branch(meta);
         let address = self.bd.ins().uextend(ir::types::I64, address);
-        self.bd.ins().bor_imm(address, reason.to_bits() as i64)
+        self.bd.ins().bor_imm_u(address, reason.to_bits() as i64)
     }
 
     /// Exits the block.
@@ -491,7 +491,7 @@ impl<'ctx> BlockBuilder<'ctx> {
         let has_next = self
             .bd
             .ins()
-            .icmp_imm(ir::condcodes::IntCC::NotEqual, next, 0);
+            .icmp_imm_u(ir::condcodes::IntCC::NotEqual, next, 0);
 
         let continue_block = self.bd.create_block();
         let exit_block = self.bd.create_block();
@@ -771,7 +771,7 @@ impl<'ctx> BlockBuilder<'ctx> {
 
         if info.auto_pc {
             let old_pc = self.get(Reg::PC);
-            let new_pc = self.bd.ins().iadd_imm(old_pc, 4);
+            let new_pc = self.bd.ins().iadd_imm_u(old_pc, 4);
             self.set(Reg::PC, new_pc);
         }
 
@@ -788,7 +788,7 @@ impl<'ctx> BlockBuilder<'ctx> {
                 self.bd.set_srcloc(ir::SourceLoc::new(u32::MAX));
                 self.flush();
                 self.exit(ExitReason::SYNC);
-                self.bd.finalize();
+                self.bd.finalize(self.codegen.isa.frontend_config());
                 break;
             };
 
@@ -801,20 +801,20 @@ impl<'ctx> BlockBuilder<'ctx> {
                     self.flush();
                     let reason = self.branch_exit_reason(meta, address);
                     self.exit(reason);
-                    self.bd.finalize();
+                    self.bd.finalize(self.codegen.isa.frontend_config());
                     break;
                 }
                 Action::Exit => {
                     self.bd.set_srcloc(ir::SourceLoc::new(u32::MAX));
                     self.flush();
                     self.exit(ExitReason::SYNC);
-                    self.bd.finalize();
+                    self.bd.finalize(self.codegen.isa.frontend_config());
                     break;
                 }
                 Action::ExitNoFlush => {
                     self.bd.set_srcloc(ir::SourceLoc::new(u32::MAX));
                     self.exit(ExitReason::SYNC);
-                    self.bd.finalize();
+                    self.bd.finalize(self.codegen.isa.frontend_config());
                     break;
                 }
             }

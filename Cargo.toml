@@ -1,200 +1,149 @@
 [workspace]
 resolver = "3"
 members = [
-    "crates/util",
-    "crates/disks",
-    "crates/gekko",
-    "crates/color",
-    "crates/gxtex",
-    "crates/jitalloc",
-    "crates/jitclif",
-    "crates/lazuli",
-    "crates/ppcjit",
-    "crates/dspint",
-    "crates/vtxjit",
-    "crates/cores",
-    "crates/renderer",
-    "crates/modules",
+  "crates/color",
+  "crates/cores",
+  "crates/disks",
+  "crates/dspint",
+  "crates/gekko",
+  "crates/gxtex",
+  "crates/jitalloc",
+  "crates/jitclif",
+  "crates/lazuli",
+  "crates/modules",
+  "crates/ppcjit",
+  "crates/renderer",
+  "crates/util",
+  "crates/vtxjit",
 
-    # binaries
-    "crates/cubetool",
-    "crates/ipl-hle",
-    "crates/app",
+  "crates/app",
+  # binaries
+  "crates/cubetool",
+  "crates/ipl-hle",
 ]
 default-members = [
-    # libraries
-    "crates/util",
-    "crates/disks",
-    "crates/gekko",
-    "crates/color",
-    "crates/gxtex",
-    "crates/jitalloc",
-    "crates/jitclif",
-    "crates/lazuli",
-    "crates/ppcjit",
-    "crates/dspint",
-    "crates/vtxjit",
-    "crates/cores",
-    "crates/renderer",
-    "crates/modules",
+  "crates/color",
+  "crates/cores",
+  "crates/disks",
+  "crates/dspint",
+  "crates/gekko",
+  "crates/gxtex",
+  "crates/jitalloc",
+  "crates/jitclif",
+  "crates/lazuli",
+  "crates/modules",
+  "crates/ppcjit",
+  "crates/renderer",
+  # libraries
+  "crates/util",
+  "crates/vtxjit",
 
-    # binaries
-    "crates/app",
+  # binaries
+  "crates/app",
 ]
 
-[profile.dev]
-panic = "unwind"
-codegen-units = 384
-
-[profile.release]
-opt-level = 3
-debug = "line-tables-only"
-strip = "none"
-debug-assertions = false
-overflow-checks = false
-lto = "thin"
-panic = "unwind"
-incremental = true
-codegen-units = 16
-rpath = false
-
-[profile.release-dist]
-inherits = "release"
-lto = "fat"
-panic = "abort"
-incremental = false
-codegen-units = 1
-
-[profile.dev.package."x11rb-protocol"]
-opt-level = 0
-
-[profile.dev.package."wayland-protocols"]
-opt-level = 0
-
-[profile.dev.package."moxcms"]
-opt-level = 0
-debug = false
-
-[profile.dev.package."naga"]
-opt-level = 1
-
-[profile.dev.package."binrw"]
-opt-level = 2
-
-[profile.dev.package."wgpu"]
-opt-level = 2
-
-[profile.dev.package."wgpu-core"]
-opt-level = 2
-debug-assertions = false
-
-[profile.dev.package."zerocopy"]
-opt-level = 2
-
-[profile.dev.package."glam"]
-opt-level = 2
-
-# workspace crates
-[profile.dev.package."disks"]
-opt-level = 2
-
-[profile.dev.package."util"]
-opt-level = 3
-
-[profile.dev.package."gxtex"]
-opt-level = 3
-
-[profile.dev.package."gekko"]
-opt-level = 2
-
-[profile.dev.package."ppcjit"]
-opt-level = 2
-
-[profile.dev.package."lazuli"]
-opt-level = 2
-
-[profile.dev.package."dspint"]
-opt-level = 2
-
-[profile.dev.package."renderer"]
-opt-level = 2
-
 [workspace.dependencies]
-# workspace crates
-util = { path = "./crates/util" }
-disks = { path = "./crates/disks" }
-gekko = { path = "./crates/gekko" }
 color = { path = "./crates/color" }
+cores = { path = "./crates/cores" }
+disks = { path = "./crates/disks" }
+dspint = { path = "./crates/dspint" }
+gekko = { path = "./crates/gekko" }
 gxtex = { path = "./crates/gxtex" }
 jitalloc = { path = "./crates/jitalloc" }
 jitclif = { path = "./crates/jitclif" }
 lazuli = { path = "./crates/lazuli" }
-ppcjit = { path = "./crates/ppcjit" }
-dspint = { path = "./crates/dspint" }
-vtxjit = { path = "./crates/vtxjit" }
-cores = { path = "./crates/cores" }
-renderer = { path = "./crates/renderer" }
 modules = { path = "./crates/modules" }
+ppcjit = { path = "./crates/ppcjit" }
+renderer = { path = "./crates/renderer" }
+# workspace crates
+util = { path = "./crates/util" }
+vtxjit = { path = "./crates/vtxjit" }
 
 # actual dependencies
-binrw = { version = "0.15", features = ["std"], default-features = false }
+binrw = { version = "0.15", default-features = false, features = ["std"] }
 bitos = { git = "https://github.com/vxpm/bitos.git", features = ["zerocopy"] }
 bitut = { git = "https://github.com/vxpm/bitut.git" }
 bitvec = "1.0"
 bytesize = "2"
 ciborium = "0.2"
 clap = { version = "4.5", features = ["derive"] }
-cranelift = { version = "0.130", features = ["frontend", "native"] }
-cranelift-codegen = { version = "0.130", default-features = false, features = [
+cranelift = { version = "0.135", features = ["frontend", "native"] }
+cranelift-codegen = {
+  version = "0.135",
+  default-features = false,
+  features = [
+    "enable-serde",
+    "host-arch",
     "std",
     "unwind",
-    "host-arch",
-    "enable-serde",
-] }
+  ]
+}
 easyerr = "0.1"
 eyre-pretty = { git = "https://github.com/vxpm/eyre-pretty.git" }
-glam = { version = "0.32", features = ["zerocopy"] }
+glam = { version = "0.33", features = ["zerocopy"] }
 indexmap = "2"
 insta = "1.46"
 libc = "0.2"
-nanorand = { version = "0.8", features = ["tls"], default-features = false }
+nanorand = { version = "0.8", default-features = false, features = ["tls"] }
 oneshot = { version = "0.2", default-features = false, features = ["std"] }
 ordered-float = "5"
 powerpc = "0.4"
 ring-arena = { git = "https://github.com/vxpm/ring-arena.git" }
 rustc-hash = "2"
+rustix = { version = "1.1", features = ["mm"] }
 seq-macro = "0.3"
 serde = { version = "1", features = ["derive"] }
 static_assertions = "1.1"
 strum = { version = "0.28", features = ["derive"] }
 tinyvec = { version = "1.10", features = ["alloc"] }
-tracing = { version = "0.1", default-features = false, features = [
-    "std",
+tracing = {
+  version = "0.1",
+  default-features = false,
+  features = [
     "release_max_level_info",
-] }
-tracing-subscriber = { version = "0.3", default-features = false, features = [
+    "std",
+  ]
+}
+tracing-subscriber = {
+  version = "0.3",
+  default-features = false,
+  features = [
     "ansi",
     "env-filter",
-] }
-twox-hash = { version = "2.1", default-features = false, features = [
+  ]
+}
+twox-hash = {
+  version = "2.1",
+  default-features = false,
+  features = [
+    "std",
     "xxhash3_64",
     "xxhash3_128",
-    "std",
-] }
-wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs", default-features = false, features = [
+  ]
+}
+wesl = {
+  git = "https://github.com/wgsl-tooling-wg/wesl-rs",
+  default-features = false,
+  features = [
     "eval",
     "naga-ext",
-] }
-wesl-quote = { git = "https://github.com/wgsl-tooling-wg/wesl-rs", rev = "c160f88" }
-wgpu = { version = "29.0", default-features = false, features = ["counters"] }
-zerocopy = { version = "0.8", features = ["derive"] }
-windows = { version = ">=0.59", features = [
+  ]
+}
+wesl-quote = {
+  git = "https://github.com/wgsl-tooling-wg/wesl-rs",
+  rev = "c160f88"
+}
+wgpu = { version = "30.0", default-features = false, features = ["counters"] }
+windows = {
+  version = ">=0.59",
+  features = [
+    "Win32_System_Diagnostics_Debug",
     "Win32_System_Memory",
     "Win32_System_Threading",
-    "Win32_System_Diagnostics_Debug",
-] }
-rustix = { version = "1.1", features = ["mm"] }
-zstd = { version = "0.13", features = ["arrays"], default-features = false }
+  ]
+}
+zerocopy = { version = "0.8", features = ["derive"] }
+zstd = { version = "0.14", default-features = false, features = ["arrays"] }
 
 # lints
 [workspace.lints.clippy]
@@ -285,3 +234,80 @@ unused_async = "warn"
 unused_result_ok = "warn"
 verbose_file_reads = "warn"
 zero_sized_map_values = "warn"
+
+[profile.dev]
+panic = "unwind"
+codegen-units = 384
+
+[profile.dev.package."binrw"]
+opt-level = 2
+
+# workspace crates
+[profile.dev.package."disks"]
+opt-level = 2
+
+[profile.dev.package."dspint"]
+opt-level = 2
+
+[profile.dev.package."gekko"]
+opt-level = 2
+
+[profile.dev.package."glam"]
+opt-level = 2
+
+[profile.dev.package."gxtex"]
+opt-level = 3
+
+[profile.dev.package."lazuli"]
+opt-level = 2
+
+[profile.dev.package."moxcms"]
+opt-level = 0
+debug = false
+
+[profile.dev.package."naga"]
+opt-level = 1
+
+[profile.dev.package."ppcjit"]
+opt-level = 2
+
+[profile.dev.package."renderer"]
+opt-level = 2
+
+[profile.dev.package."util"]
+opt-level = 3
+
+[profile.dev.package."wayland-protocols"]
+opt-level = 0
+
+[profile.dev.package."wgpu"]
+opt-level = 2
+
+[profile.dev.package."wgpu-core"]
+opt-level = 2
+debug-assertions = false
+
+[profile.dev.package."x11rb-protocol"]
+opt-level = 0
+
+[profile.dev.package."zerocopy"]
+opt-level = 2
+
+[profile.release]
+opt-level = 3
+debug = "line-tables-only"
+strip = "none"
+debug-assertions = false
+overflow-checks = false
+lto = "thin"
+panic = "unwind"
+incremental = true
+codegen-units = 16
+rpath = false
+
+[profile.release-dist]
+inherits = "release"
+lto = "fat"
+panic = "abort"
+incremental = false
+codegen-units = 1

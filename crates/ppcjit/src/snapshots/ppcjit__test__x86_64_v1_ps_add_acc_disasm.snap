@@ -28,96 +28,93 @@ block3:
   return_call_unknown %r10 (0) tmp=%r11 %rdi=%rdi %rsi=%rsi %rdx=%rdx
 block4:
   movq %r12, %rsi
-  movupd 0x88(%rsi), %xmm4
+  movupd 0x88(%rsi), %xmm1
   movupd 0x98(%rsi), %xmm0
-  movl 0x28c(%rsi), %eax
-  movl (%rsi), %ecx
-  movupd 0xa8(%rsi), %xmm1
+  movl 0x28c(%rsi), %ecx
+  movl (%rsi), %eax
+  movupd 0xa8(%rsi), %xmm2
   movupd 0xb8(%rsi), %xmm5
   movupd 0xc8(%rsi), %xmm6
-  leal 0x10(%rcx), %ecx
-  movl %ecx, (%rsi)
-  addpd %xmm0, %xmm4
-  movdqa %xmm4, %xmm3
-  addpd %xmm1, %xmm3
-  movdqa %xmm3, %xmm2
-  addpd %xmm5, %xmm2
-  movdqa %xmm2, %xmm0
+  leal 0x10(%rax), %eax
+  movl %eax, (%rsi)
+  addpd %xmm0, %xmm1
+  movdqa %xmm1, %xmm3
+  addpd %xmm2, %xmm3
+  movdqa %xmm3, %xmm4
+  addpd %xmm5, %xmm4
+  movdqa %xmm4, %xmm0
   addpd %xmm6, %xmm0
   movupd %xmm0, 0x88(%rsi)
-  andl $0xfffe0fff, %eax
-  uninit  %xmm1
-  xorpd %xmm1, %xmm1
-  ucomisd %xmm4, %xmm1
-  seta %cl
-  movzbl %cl, %ecx
-  shll $0xf, %ecx
+  uninit  %xmm2
+  xorpd %xmm2, %xmm2
+  ucomisd %xmm4, %xmm2
+  seta %al
+  movzbl %al, %eax
+  shll $0xf, %eax
   ucomisd (%rip), %xmm4
   seta %dl
   movzbl %dl, %edx
   shll $0xe, %edx
-  orl %edx, %ecx
+  orl %edx, %eax
   ucomisd (%rip), %xmm4
   setnp %dl
   sete %dil
   andl %edi, %edx
   movzbl %dl, %edx
   shll $0xd, %edx
-  orl %edx, %ecx
+  orl %edx, %eax
   ucomisd (%rip), %xmm4
   setp %dl
   movzbl %dl, %edx
   shll $0xc, %edx
-  orl %edx, %ecx
-  orl %ecx, %eax
-  andl $0xfffe0fff, %eax
-  ucomisd %xmm3, %xmm1
-  seta %cl
-  movzbl %cl, %ecx
-  shll $0xf, %ecx
-  ucomisd (%rip), %xmm3
+  orl %edx, %eax
+  ucomisd %xmm3, %xmm2
   seta %dl
   movzbl %dl, %edx
-  shll $0xe, %edx
-  orl %edx, %ecx
+  shll $0xf, %edx
   ucomisd (%rip), %xmm3
-  setnp %dl
-  sete %dil
-  andl %edi, %edx
-  movzbl %dl, %edx
-  shll $0xd, %edx
-  orl %edx, %ecx
-  ucomisd (%rip), %xmm3
-  setp %dl
-  movzbl %dl, %edx
-  shll $0xc, %edx
-  orl %edx, %ecx
-  orl %ecx, %eax
-  andl $0xfffe0fff, %eax
-  ucomisd %xmm2, %xmm1
-  seta %dl
-  movzbl %dl, %ecx
-  shll $0xf, %ecx
-  ucomisd (%rip), %xmm2
   seta %dil
-  movzbl %dil, %edx
-  shll $0xe, %edx
-  orl %edx, %ecx
-  ucomisd (%rip), %xmm2
+  movzbl %dil, %edi
+  shll $0xe, %edi
+  orl %edi, %edx
+  ucomisd (%rip), %xmm3
   setnp %dil
   sete %r8b
   andl %r8d, %edi
   movzbl %dil, %edi
   shll $0xd, %edi
-  orl %edi, %ecx
-  ucomisd (%rip), %xmm2
+  orl %edi, %edx
+  ucomisd (%rip), %xmm3
   setp %dil
   movzbl %dil, %edi
   shll $0xc, %edi
-  orl %edi, %ecx
-  orl %ecx, %eax
+  orl %edi, %edx
+  ucomisd %xmm1, %xmm2
+  seta %dil
+  movzbl %dil, %edi
+  shll $0xf, %edi
+  ucomisd (%rip), %xmm1
+  seta %r8b
+  movzbl %r8b, %r8d
+  shll $0xe, %r8d
+  orl %r8d, %edi
+  ucomisd (%rip), %xmm1
+  setnp %r8b
+  sete %r9b
+  andl %r9d, %r8d
+  movzbl %r8b, %r8d
+  shll $0xd, %r8d
+  orl %r8d, %edi
+  ucomisd (%rip), %xmm1
+  setp %r8b
+  movzbl %r8b, %r8d
+  shll $0xc, %r8d
+  orl %r8d, %edi
+  orl %ecx, %edi
+  orl %edi, %edx
+  orl %edx, %eax
   andl $0xfffe0fff, %eax
-  ucomisd %xmm0, %xmm1
+  ucomisd %xmm0, %xmm2
   seta %dil
   movzbl %dil, %ecx
   shll $0xf, %ecx
@@ -127,26 +124,26 @@ block4:
   shll $0xe, %edi
   orl %edi, %ecx
   ucomisd (%rip), %xmm0
-  setnp %r8b
-  sete %r9b
-  andl %r9d, %r8d
-  movzbl %r8b, %edi
+  setnp %dil
+  sete %r8b
+  andl %r8d, %edi
+  movzbl %dil, %edi
   shll $0xd, %edi
   orl %edi, %ecx
   ucomisd (%rip), %xmm0
-  setp %r9b
-  movzbl %r9b, %r8d
-  shll $0xc, %r8d
-  orl %r8d, %ecx
+  setp %dil
+  movzbl %dil, %edi
+  shll $0xc, %edi
+  orl %edi, %ecx
   orl %ecx, %eax
   movl %eax, 0x28c(%rsi)
   load_ext_name userextname23+0, %rsi
   uninit  %rdx
   xorq %rdx, %rdx
   movl $0x80004, %ecx
-  load_ext_name userextname1+0, %r10
+  load_ext_name userextname1+0, %r8
   movq %r13, %rdi
-  call    *%r10
+  call    *%r8
   testq %rax, %rax
   movq %rax, %r10
   jnz     label6; j label5

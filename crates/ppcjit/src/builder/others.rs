@@ -163,10 +163,10 @@ impl BlockBuilder<'_> {
         let mask = self.ir_value(mask);
 
         let fpscr = self.get(Reg::FPSCR);
-        let fpr_b_ps0_bits = self
-            .bd
-            .ins()
-            .bitcast(ir::types::I64, ir::MemFlags::new(), fpr_b_ps0);
+        let fpr_b_ps0_bits =
+            self.bd
+                .ins()
+                .bitcast(ir::types::I64, ir::MemFlagsData::new(), fpr_b_ps0);
         let fpr_b_ps0_low = self.bd.ins().ireduce(ir::types::I32, fpr_b_ps0_bits);
 
         let value = self.bd.ins().bitselect(mask, fpr_b_ps0_low, fpscr);
@@ -221,7 +221,7 @@ impl BlockBuilder<'_> {
         let bit_a = self.get_bit(cr, bit_a);
         let bit_b = self.get_bit(cr, bit_b);
         let xored = self.bd.ins().bxor(bit_a, bit_b);
-        let not = self.bd.ins().bxor_imm(xored, 1);
+        let not = self.bd.ins().bxor_imm_u(xored, 1);
 
         let value = self.set_bit(cr, bit_dest, not);
         self.set(Reg::CR, value);
@@ -253,7 +253,7 @@ impl BlockBuilder<'_> {
         let cr = self.get(Reg::CR);
         let bit_a = self.get_bit(cr, bit_a);
         let bit_b = self.get_bit(cr, bit_b);
-        let not_b = self.bd.ins().bxor_imm(bit_b, 1);
+        let not_b = self.bd.ins().bxor_imm_u(bit_b, 1);
         let ored = self.bd.ins().bor(bit_a, not_b);
 
         let value = self.set_bit(cr, bit_dest, ored);
@@ -271,7 +271,7 @@ impl BlockBuilder<'_> {
         let bit_a = self.get_bit(cr, bit_a);
         let bit_b = self.get_bit(cr, bit_b);
         let ored = self.bd.ins().bor(bit_a, bit_b);
-        let nored = self.bd.ins().bxor_imm(ored, 1);
+        let nored = self.bd.ins().bxor_imm_u(ored, 1);
 
         let value = self.set_bit(cr, bit_dest, nored);
         self.set(Reg::CR, value);
@@ -303,7 +303,7 @@ impl BlockBuilder<'_> {
         let cr = self.get(Reg::CR);
         let bit_a = self.get_bit(cr, bit_a);
         let bit_b = self.get_bit(cr, bit_b);
-        let not_b = self.bd.ins().bxor_imm(bit_b, 1);
+        let not_b = self.bd.ins().bxor_imm_u(bit_b, 1);
         let anded = self.bd.ins().band(bit_a, not_b);
 
         let value = self.set_bit(cr, bit_dest, anded);
@@ -321,7 +321,7 @@ impl BlockBuilder<'_> {
         let bit_a = self.get_bit(cr, bit_a);
         let bit_b = self.get_bit(cr, bit_b);
         let anded = self.bd.ins().band(bit_a, bit_b);
-        let nanded = self.bd.ins().bxor_imm(anded, 1);
+        let nanded = self.bd.ins().bxor_imm_u(anded, 1);
 
         let value = self.set_bit(cr, bit_dest, nanded);
         self.set(Reg::CR, value);
@@ -335,11 +335,11 @@ impl BlockBuilder<'_> {
 
         // get src
         let cr = self.get(Reg::CR);
-        let src = self.bd.ins().ushr_imm(cr, 4 * src_field as u64 as i64);
-        let src = self.bd.ins().band_imm(src, 0b1111u64 as i64);
+        let src = self.bd.ins().ushr_imm_u(cr, 4 * src_field as u64 as i64);
+        let src = self.bd.ins().band_imm_u(src, 0b1111u64 as i64);
 
         // place src in dst
-        let new = self.bd.ins().ishl_imm(src, 4 * dst_field as u64 as i64);
+        let new = self.bd.ins().ishl_imm_u(src, 4 * dst_field as u64 as i64);
         let dst_mask = self.ir_value(0b1111 << (4 * dst_field));
         let value = self.bd.ins().bitselect(dst_mask, new, cr);
 
@@ -353,12 +353,12 @@ impl BlockBuilder<'_> {
 
         // get src
         let xer = self.get(SPR::XER);
-        let src = self.bd.ins().band_imm(xer, 0b1111u64 as i64);
-        let new_xer = self.bd.ins().band_imm(xer, !0b1111u64 as i64);
+        let src = self.bd.ins().band_imm_u(xer, 0b1111u64 as i64);
+        let new_xer = self.bd.ins().band_imm_u(xer, !0b1111u64 as i64);
 
         // place src in dst
         let cr = self.get(Reg::CR);
-        let new = self.bd.ins().ishl_imm(src, 4 * dst_field as u64 as i64);
+        let new = self.bd.ins().ishl_imm_u(src, 4 * dst_field as u64 as i64);
         let dst_mask = self.ir_value(0b1111 << (4 * dst_field));
         let value = self.bd.ins().bitselect(dst_mask, new, cr);
 
@@ -418,9 +418,9 @@ impl BlockBuilder<'_> {
         };
 
         let zero = self.ir_value(0u32);
-        let block_start = self.bd.ins().band_imm(addr, !0b11111u64 as i64);
+        let block_start = self.bd.ins().band_imm_u(addr, !0b11111u64 as i64);
         for i in 0..8 {
-            let current = self.bd.ins().iadd_imm(block_start, 4 * i);
+            let current = self.bd.ins().iadd_imm_u(block_start, 4 * i);
             self.mem_store::<i32>(current, zero);
         }
 

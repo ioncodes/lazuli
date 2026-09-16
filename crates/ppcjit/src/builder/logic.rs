@@ -313,8 +313,8 @@ impl BlockBuilder<'_> {
         let rs = self.get(ins.gpr_s());
         let mask = generate_mask(ins.field_me(), ins.field_mb());
 
-        let rotated = self.bd.ins().rotl_imm(rs, ins.field_sh() as u64 as i64);
-        let masked = self.bd.ins().band_imm(rotated, mask as i64);
+        let rotated = self.bd.ins().rotl_imm_u(rs, ins.field_sh() as u64 as i64);
+        let masked = self.bd.ins().band_imm_u(rotated, mask as i64);
 
         if ins.field_rc() {
             self.update_cr0_cmpz(masked);
@@ -329,10 +329,10 @@ impl BlockBuilder<'_> {
         let rs = self.get(ins.gpr_s());
         let rb = self.get(ins.gpr_b());
         let mask = generate_mask(ins.field_me(), ins.field_mb());
-        let shift_amount = self.bd.ins().band_imm(rb, 0x1F);
+        let shift_amount = self.bd.ins().band_imm_u(rb, 0x1F);
 
         let rotated = self.bd.ins().rotl(rs, shift_amount);
-        let masked = self.bd.ins().band_imm(rotated, mask as i64);
+        let masked = self.bd.ins().band_imm_u(rotated, mask as i64);
 
         if ins.field_rc() {
             self.update_cr0_cmpz(masked);
@@ -348,7 +348,7 @@ impl BlockBuilder<'_> {
         let ra = self.get(ins.gpr_a());
         let mask = self.ir_value(generate_mask(ins.field_me(), ins.field_mb()));
 
-        let rotated = self.bd.ins().rotl_imm(rs, ins.field_sh() as u64 as i64);
+        let rotated = self.bd.ins().rotl_imm_u(rs, ins.field_sh() as u64 as i64);
         let inserted = self.bd.ins().bitselect(mask, rotated, ra);
 
         if ins.field_rc() {
@@ -381,7 +381,7 @@ impl BlockBuilder<'_> {
                 // - rs is negative, and
                 // - shift_by > trailing zeros of rs
                 let trailing_zeros = self.bd.ins().ctz(lhs);
-                let is_rs_neg = self.bd.ins().icmp_imm(IntCC::SignedLessThan, lhs, 0);
+                let is_rs_neg = self.bd.ins().icmp_imm_u(IntCC::SignedLessThan, lhs, 0);
                 let is_shift_by_gt_tz =
                     self.bd
                         .ins()
@@ -410,7 +410,7 @@ impl BlockBuilder<'_> {
         let lhs = self.get(ins.gpr_s());
         let rhs = self.shift_get_rhs(ins, op.rhs);
 
-        let shift_by = self.bd.ins().band_imm(rhs, 0x3F);
+        let shift_by = self.bd.ins().band_imm_u(rhs, 0x3F);
         let value = self.shift_compute(op.kind, lhs, shift_by);
 
         if ins.field_rc() {

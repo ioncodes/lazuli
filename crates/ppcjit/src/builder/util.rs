@@ -127,7 +127,7 @@ impl BlockBuilder<'_> {
         let index = self.ir_value(index);
 
         let shifted = self.bd.ins().ushr(value, index);
-        let bit = self.bd.ins().band_imm(shifted, 0b1);
+        let bit = self.bd.ins().band_imm_u(shifted, 0b1);
 
         self.bd.ins().ireduce(ir::types::I8, bit)
     }
@@ -160,7 +160,7 @@ impl BlockBuilder<'_> {
     pub fn copy_ps0_to_ps1(&mut self, value: ir::Value) -> ir::Value {
         let bytes = self.bd.ins().bitcast(
             ir::types::I8X16,
-            ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+            ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
             value,
         );
 
@@ -181,7 +181,7 @@ impl BlockBuilder<'_> {
 
         self.bd.ins().bitcast(
             ir::types::F64X2,
-            ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+            ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
             value,
         )
     }
@@ -190,7 +190,7 @@ impl BlockBuilder<'_> {
     pub fn copy_ps1_to_ps0(&mut self, value: ir::Value) -> ir::Value {
         let bytes = self.bd.ins().bitcast(
             ir::types::I8X16,
-            ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+            ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
             value,
         );
 
@@ -211,7 +211,7 @@ impl BlockBuilder<'_> {
 
         self.bd.ins().bitcast(
             ir::types::F64X2,
-            ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+            ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
             value,
         )
     }
@@ -233,13 +233,13 @@ impl BlockBuilder<'_> {
 
         let bytes_a = self.bd.ins().bitcast(
             ir::types::I8X16,
-            ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+            ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
             a,
         );
 
         let bytes_b = self.bd.ins().bitcast(
             ir::types::I8X16,
-            ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+            ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
             b,
         );
 
@@ -253,7 +253,7 @@ impl BlockBuilder<'_> {
         let value = self.bd.ins().shuffle(bytes_a, bytes_b, mask);
         self.bd.ins().bitcast(
             ir::types::F64X2,
-            ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+            ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
             value,
         )
     }
@@ -264,8 +264,8 @@ impl BlockBuilder<'_> {
         let overflowed = self.ir_value(overflowed);
         let overflowed = self.bd.ins().uextend(ir::types::I32, overflowed);
 
-        let ov = self.bd.ins().ishl_imm(overflowed, 30);
-        let so = self.bd.ins().ishl_imm(overflowed, 31);
+        let ov = self.bd.ins().ishl_imm_u(overflowed, 30);
+        let so = self.bd.ins().ishl_imm_u(overflowed, 31);
         let value = self.bd.ins().bor(ov, so);
 
         let mask = self.ir_value(0b1 << 30);
@@ -300,10 +300,10 @@ impl BlockBuilder<'_> {
         let ov = self.bd.ins().uextend(ir::types::I32, ov);
 
         let base = (4 * (7 - index)) as u64 as i64;
-        let lt = self.bd.ins().ishl_imm(lt, base + 3);
-        let gt = self.bd.ins().ishl_imm(gt, base + 2);
-        let eq = self.bd.ins().ishl_imm(eq, base + 1);
-        let ov = self.bd.ins().ishl_imm(ov, base);
+        let lt = self.bd.ins().ishl_imm_u(lt, base + 3);
+        let gt = self.bd.ins().ishl_imm_u(gt, base + 2);
+        let eq = self.bd.ins().ishl_imm_u(eq, base + 1);
+        let ov = self.bd.ins().ishl_imm_u(ov, base);
 
         let value = self.bd.ins().bor(lt, gt);
         let value = self.bd.ins().bor(value, eq);
@@ -319,9 +319,9 @@ impl BlockBuilder<'_> {
     /// Updates CR0 by signed comparison of the given value with 0 and by copying the overflow flag
     /// from XER SO. Value must be an I32.
     pub fn update_cr0_cmpz(&mut self, value: ir::Value) {
-        let lt = self.bd.ins().icmp_imm(IntCC::SignedLessThan, value, 0);
-        let gt = self.bd.ins().icmp_imm(IntCC::SignedGreaterThan, value, 0);
-        let eq = self.bd.ins().icmp_imm(IntCC::Equal, value, 0);
+        let lt = self.bd.ins().icmp_imm_u(IntCC::SignedLessThan, value, 0);
+        let gt = self.bd.ins().icmp_imm_u(IntCC::SignedGreaterThan, value, 0);
+        let eq = self.bd.ins().icmp_imm_u(IntCC::Equal, value, 0);
 
         let xer = self.get(SPR::XER);
         let ov = self.get_bit(xer, 31);
@@ -338,10 +338,10 @@ impl BlockBuilder<'_> {
         let eq = self.bd.ins().uextend(ir::types::I32, eq);
         let un = self.bd.ins().uextend(ir::types::I32, un);
 
-        let lt = self.bd.ins().ishl_imm(lt, 15);
-        let gt = self.bd.ins().ishl_imm(gt, 14);
-        let eq = self.bd.ins().ishl_imm(eq, 13);
-        let un = self.bd.ins().ishl_imm(un, 12);
+        let lt = self.bd.ins().ishl_imm_u(lt, 15);
+        let gt = self.bd.ins().ishl_imm_u(gt, 14);
+        let eq = self.bd.ins().ishl_imm_u(eq, 13);
+        let un = self.bd.ins().ishl_imm_u(un, 12);
 
         let value = self.bd.ins().bor(lt, gt);
         let value = self.bd.ins().bor(value, eq);
@@ -431,7 +431,7 @@ impl BlockBuilder<'_> {
         let fpscr = self.get(Reg::FPSCR);
         let cr = self.get(Reg::CR);
 
-        let bits = self.bd.ins().ushr_imm(fpscr, 4);
+        let bits = self.bd.ins().ushr_imm_u(fpscr, 4);
         let mask = self.ir_value(0b1111 << 24);
         let updated = self.bd.ins().bitselect(mask, bits, cr);
 
@@ -459,15 +459,15 @@ impl BlockBuilder<'_> {
         let value = self
             .bd
             .ins()
-            .bitcast(ir::types::I64, ir::MemFlags::new(), value);
+            .bitcast(ir::types::I64, ir::MemFlagsData::new(), value);
 
-        let top_bits = self.bd.ins().sshr_imm(value, 62);
+        let top_bits = self.bd.ins().sshr_imm_u(value, 62);
         let top_bits = self.bd.ins().ireduce(ir::types::I32, top_bits);
-        let top_bits = self.bd.ins().ishl_imm(top_bits, 30);
+        let top_bits = self.bd.ins().ishl_imm_u(top_bits, 30);
 
-        let bottom_bits = self.bd.ins().sshr_imm(value, 29);
+        let bottom_bits = self.bd.ins().sshr_imm_u(value, 29);
         let bottom_bits = self.bd.ins().ireduce(ir::types::I32, bottom_bits);
-        let bottom_bits = self.bd.ins().band_imm(bottom_bits, (1 << 30) - 1);
+        let bottom_bits = self.bd.ins().band_imm_u(bottom_bits, (1 << 30) - 1);
 
         self.bd.ins().bor(top_bits, bottom_bits)
     }

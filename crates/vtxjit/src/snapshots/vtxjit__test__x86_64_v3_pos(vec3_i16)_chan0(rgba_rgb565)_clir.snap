@@ -20,63 +20,71 @@ function u0:0(i64, i64, i64, i64, i64, i64, i32) system_v {
                                     v14 = scalar_to_vector.i64x2 v13
                                     v15 = bor v10, v14
                                     v16 = uextend.i64 v7
-                                    v17 = band_imm v16, 31
-                                    v18 = iadd_imm v17, 64
-                                    v19 = iconst.i64 1
-                                    v20 = ishl v19, v18  ; v19 = 1
-                                    v21 = iconst.i64 0
-                                    v22 = splat.i64x2 v21  ; v21 = 0
-                                    v23 = insertlane v22, v20, 1
-                                    v24 = bor v15, v23
-                                    v30 = iconst.i32 0
-                                    jump block1(v3, v4, v24, v30)  ; v30 = 0
+                                    v17 = iconst.i64 31
+                                    v18 = band v16, v17  ; v17 = 31
+                                    v19 = iconst.i64 64
+                                    v20 = iadd v18, v19  ; v19 = 64
+                                    v21 = iconst.i64 1
+                                    v22 = ishl v21, v20  ; v21 = 1
+                                    v23 = iconst.i64 0
+                                    v24 = splat.i64x2 v23  ; v23 = 0
+                                    v25 = insertlane v24, v22, 1
+                                    v26 = bor v15, v25
+                                    v32 = iconst.i32 0
+                                    jump block1(v3, v4, v26, v32)  ; v32 = 0
 
-                                block1(v25: i64, v26: i64, v27: i64x2, v28: i32):
-                                    v31 = icmp ult v28, v6
-                                    brif v31, block2, block3(v27)
+                                block1(v27: i64, v28: i64, v29: i64x2, v30: i32):
+                                    v33 = icmp ult v30, v6
+                                    brif v33, block2, block3(v29)
 
                                 block2:
-@0000                               store.i8 notrap can_move v7, v26+128
-@0000                               store.i64 notrap can_move v8, v26+96
-@0009                               v32 = f32const 0x1.000000p0
-@0009                               v33 = load.i8x16 notrap readonly can_move v25
-@0009                               v34 = vconst.i8x16 const0
-@0009                               v35 = swizzle v33, v34  ; v34 = const0
-@0009                               v36 = bitcast.i32x4 little v35
-@0009                               v37 = sshr_imm v36, 16
-@0009                               v38 = fcvt_from_sint.f32x4 v37
-@0009                               v39 = splat.f32x4 v32  ; v32 = 0x1.000000p0
-@0009                               v40 = fmul v38, v39
-@0009                               v41 = extractlane v40, 0
-@0009                               v42 = extractlane v40, 1
-@0009                               v43 = extractlane v40, 2
-@0009                               store notrap can_move v41, v26+104
-@0009                               store notrap can_move v42, v26+108
-@0009                               store notrap can_move v43, v26+112
-@0009                               v44 = iadd_imm.i64 v25, 6
-@000b                               v45 = load.i8x16 notrap readonly can_move v44
-@000b                               v46 = vconst.i8x16 const1
-@000b                               v47 = swizzle v45, v46  ; v46 = const1
-@000b                               v48 = bitcast.i32x4 little v47
-@000b                               v49 = vconst.i32x4 const2
-@000b                               v50 = vconst.i32x4 const3
-@000b                               v51 = imul v48, v49  ; v49 = const2
-@000b                               v52 = ushr_imm v51, 11
-@000b                               v53 = band v52, v50  ; v50 = const3
-@000b                               v54 = fcvt_from_uint.f32x4 v53
-@000b                               v55 = vconst.f32x4 const4
-@000b                               v56 = fmul v54, v55  ; v55 = const4
-@000b                               v57 = f32const 0x1.000000p0
-@000b                               v58 = insertlane v56, v57, 3  ; v57 = 0x1.000000p0
-@000b                               store notrap can_move v58, v26+64
-@000b                               v59 = iadd_imm v44, 2
-                                    v60 = iadd_imm.i64 v26, 132
-                                    v61 = iadd_imm.i32 v28, 1
-                                    jump block1(v59, v60, v27, v61)
+@0000                               store.i8 notrap can_move v7, v28+128
+@0000                               store.i64 notrap can_move v8, v28+96
+@0009                               v34 = f32const 0x1.000000p0
+@0009                               v35 = load.i8x16 notrap readonly can_move v27
+@0009                               v36 = vconst.i8x16 const0
+@0009                               v37 = swizzle v35, v36  ; v36 = const0
+@0009                               v38 = bitcast.i32x4 little v37
+@0009                               v39 = iconst.i32 16
+@0009                               v40 = sshr v38, v39  ; v39 = 16
+@0009                               v41 = fcvt_from_sint.f32x4 v40
+@0009                               v42 = splat.f32x4 v34  ; v34 = 0x1.000000p0
+@0009                               v43 = fmul v41, v42
+@0009                               v44 = extractlane v43, 0
+@0009                               v45 = extractlane v43, 1
+@0009                               v46 = extractlane v43, 2
+@0009                               store notrap can_move v44, v28+104
+@0009                               store notrap can_move v45, v28+108
+@0009                               store notrap can_move v46, v28+112
+@0009                               v47 = iconst.i64 6
+@0009                               v48 = iadd.i64 v27, v47  ; v47 = 6
+@000b                               v49 = load.i8x16 notrap readonly can_move v48
+@000b                               v50 = vconst.i8x16 const1
+@000b                               v51 = swizzle v49, v50  ; v50 = const1
+@000b                               v52 = bitcast.i32x4 little v51
+@000b                               v53 = vconst.i32x4 const2
+@000b                               v54 = vconst.i32x4 const3
+@000b                               v55 = imul v52, v53  ; v53 = const2
+@000b                               v56 = iconst.i32 11
+@000b                               v57 = ushr v55, v56  ; v56 = 11
+@000b                               v58 = band v57, v54  ; v54 = const3
+@000b                               v59 = fcvt_from_uint.f32x4 v58
+@000b                               v60 = vconst.f32x4 const4
+@000b                               v61 = fmul v59, v60  ; v60 = const4
+@000b                               v62 = f32const 0x1.000000p0
+@000b                               v63 = insertlane v61, v62, 3  ; v62 = 0x1.000000p0
+@000b                               store notrap can_move v63, v28+64
+@000b                               v64 = iconst.i64 2
+@000b                               v65 = iadd v48, v64  ; v64 = 2
+                                    v66 = iconst.i64 132
+                                    v67 = iadd.i64 v28, v66  ; v66 = 132
+                                    v68 = iconst.i32 1
+                                    v69 = iadd.i32 v30, v68  ; v68 = 1
+                                    jump block1(v65, v67, v29, v69)
 
-                                block3(v29: i64x2) cold:
-                                    v62 = load.i64x2 notrap can_move v5
-                                    v63 = bor v62, v29
-                                    store notrap can_move v63, v5
+                                block3(v31: i64x2) cold:
+                                    v70 = load.i64x2 notrap can_move v5
+                                    v71 = bor v70, v31
+                                    store notrap can_move v71, v5
                                     return
 }

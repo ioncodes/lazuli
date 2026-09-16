@@ -21,8 +21,8 @@ impl BlockBuilder<'_> {
         let gt = self.bd.ins().icmp(IntCC::SignedGreaterThan, a, b);
         let eq = self.bd.ins().icmp(IntCC::Equal, a, b);
 
-        let ov = self.bd.ins().ushr_imm(xer, 31);
-        let ov = self.bd.ins().icmp_imm(IntCC::NotEqual, ov, 0);
+        let ov = self.bd.ins().ushr_imm_u(xer, 31);
+        let ov = self.bd.ins().icmp_imm_u(IntCC::NotEqual, ov, 0);
 
         self.update_cr(index, lt, gt, eq, ov);
     }
@@ -34,8 +34,8 @@ impl BlockBuilder<'_> {
         let gt = self.bd.ins().icmp(IntCC::UnsignedGreaterThan, a, b);
         let eq = self.bd.ins().icmp(IntCC::Equal, a, b);
 
-        let ov = self.bd.ins().ushr_imm(xer, 31);
-        let ov = self.bd.ins().icmp_imm(IntCC::NotEqual, ov, 0);
+        let ov = self.bd.ins().ushr_imm_u(xer, 31);
+        let ov = self.bd.ins().icmp_imm_u(IntCC::NotEqual, ov, 0);
 
         self.update_cr(index, lt, gt, eq, ov);
     }

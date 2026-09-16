@@ -23,7 +23,7 @@ impl BufferPair {
         match &self.secondary {
             Some(secondary) => {
                 {
-                    let mut mapped = secondary.get_mapped_range_mut(..size);
+                    let mut mapped = secondary.get_mapped_range_mut(..size).unwrap();
                     mapped.copy_from_slice(data);
                 }
 
@@ -32,7 +32,7 @@ impl BufferPair {
             }
             None => {
                 {
-                    let mut mapped = self.primary.get_mapped_range_mut(..size);
+                    let mut mapped = self.primary.get_mapped_range_mut(..size).unwrap();
                     mapped.copy_from_slice(data);
                 }
 

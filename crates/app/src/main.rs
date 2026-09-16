@@ -215,7 +215,7 @@ const FRAMETIME: Duration = Duration::new(0, (1_000_000_000.0 / 60.0) as u32);
 
 impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        egui::Panel::top("menu_bar").show_inside(ui, |ui| {
+        egui::Panel::top("menu_bar").show(ui, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 ui.label("Lazuli");
                 ui.menu_button("🗖 View", |ui| {
@@ -327,7 +327,7 @@ impl eframe::App for App {
             renderer: &mut self.renderer,
         };
 
-        egui::CentralPanel::default().show_inside(ui, |ui| {
+        egui::CentralPanel::default().show(ui, |ui| {
             let mut close = None;
             for (index, window_state) in self.windows.iter_mut().enumerate() {
                 let mut open = true;
@@ -467,7 +467,6 @@ fn main() -> Result<()> {
             }),
             ..Default::default()
         },
-        vsync: false,
         ..Default::default()
     };
 

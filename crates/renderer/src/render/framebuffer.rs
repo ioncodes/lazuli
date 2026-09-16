@@ -459,7 +459,7 @@ impl Renderer {
         let result = receiver.recv().unwrap();
         result.unwrap();
 
-        let mapped = self.data_read_buffer.get_mapped_range(..);
+        let mapped = self.data_read_buffer.get_mapped_range(..).unwrap();
         let data = &*mapped;
 
         let mut texels = Vec::with_capacity(size.width as usize * size.height as usize);

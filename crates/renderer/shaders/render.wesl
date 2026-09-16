@@ -86,7 +86,7 @@ var<immediate> pipeline_immediates: PipelineImmediates;
 @if(sample_shading)
 struct VertexOutput {
     @builtin(position) clip: vec4f,
-    @location(0) config_idx: u32,
+    @interpolate(flat) @location(0) config_idx: u32,
     @interpolate(perspective, sample) @location(1) chan0: vec4f,
     @interpolate(perspective, sample) @location(2) chan1: vec4f,
     @interpolate(perspective, sample) @location(3) tex_coord0: vec3f,
@@ -102,7 +102,7 @@ struct VertexOutput {
 @if(!sample_shading)
 struct VertexOutput {
     @builtin(position) clip: vec4f,
-    @location(0) config_idx: u32,
+    @interpolate(flat) @location(0) config_idx: u32,
     @interpolate(perspective, centroid) @location(1) chan0: vec4f,
     @interpolate(perspective, centroid) @location(2) chan1: vec4f,
     @interpolate(perspective, centroid) @location(3) tex_coord0: vec3f,

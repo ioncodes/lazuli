@@ -74,9 +74,9 @@ impl BlockBuilder<'_> {
         rhs: ir::Value,
         result: ir::Value,
     ) -> ir::Value {
-        let lhs_sign = self.bd.ins().band_imm(lhs, 0b1 << 31);
-        let rhs_sign = self.bd.ins().band_imm(rhs, 0b1 << 31);
-        let result_sign = self.bd.ins().band_imm(result, 0b1 << 31);
+        let lhs_sign = self.bd.ins().band_imm_u(lhs, 0b1 << 31);
+        let rhs_sign = self.bd.ins().band_imm_u(rhs, 0b1 << 31);
+        let result_sign = self.bd.ins().band_imm_u(result, 0b1 << 31);
 
         let lhs_eq_rhs = self.bd.ins().icmp(IntCC::Equal, lhs_sign, rhs_sign);
         let result_sign_diff = self.bd.ins().icmp(IntCC::NotEqual, result_sign, lhs_sign);
@@ -279,9 +279,9 @@ impl BlockBuilder<'_> {
         rhs: ir::Value,
         result: ir::Value,
     ) -> ir::Value {
-        let lhs_sign = self.bd.ins().band_imm(lhs, 0b1 << 31);
-        let rhs_sign = self.bd.ins().band_imm(rhs, 0b1 << 31);
-        let result_sign = self.bd.ins().band_imm(result, 0b1 << 31);
+        let lhs_sign = self.bd.ins().band_imm_u(lhs, 0b1 << 31);
+        let rhs_sign = self.bd.ins().band_imm_u(rhs, 0b1 << 31);
+        let result_sign = self.bd.ins().band_imm_u(result, 0b1 << 31);
 
         let rhs_eq_value = self.bd.ins().icmp(IntCC::Equal, rhs_sign, result_sign);
         let lhs_sign_diff = self.bd.ins().icmp(IntCC::NotEqual, lhs_sign, rhs_sign);
@@ -420,7 +420,7 @@ impl BlockBuilder<'_> {
     pub fn neg(&mut self, ins: Ins) -> InstructionInfo {
         let ra = self.get(ins.gpr_a());
         let value = self.bd.ins().ineg(ra);
-        let overflowed = self.bd.ins().icmp_imm(IntCC::Equal, ra, i32::MIN as i64);
+        let overflowed = self.bd.ins().icmp_imm_s(IntCC::Equal, ra, i32::MIN as i64);
 
         if ins.field_oe() {
             self.update_xer_ov(overflowed);
@@ -441,12 +441,12 @@ impl BlockBuilder<'_> {
 
         // division by zero: undefined, just avoid it by using 1 as denom instead
         let one = self.ir_value(1i32);
-        let is_div_by_zero = self.bd.ins().icmp_imm(IntCC::Equal, rb, 0);
+        let is_div_by_zero = self.bd.ins().icmp_imm_u(IntCC::Equal, rb, 0);
         let denom = self.bd.ins().select(is_div_by_zero, one, rb);
 
         // special case: if dividing 0x8000_0000 by -1, replace the denom with 1 too
-        let is_min_neg = self.bd.ins().icmp_imm(IntCC::Equal, ra, 0x8000_0000);
-        let is_div_by_minus_one = self.bd.ins().icmp_imm(IntCC::Equal, rb, -1);
+        let is_min_neg = self.bd.ins().icmp_imm_u(IntCC::Equal, ra, 0x8000_0000);
+        let is_div_by_minus_one = self.bd.ins().icmp_imm_u(IntCC::Equal, rb, -1);
         let is_special_case = self.bd.ins().band(is_min_neg, is_div_by_minus_one);
         let denom = self.bd.ins().select(is_special_case, one, denom);
 
@@ -472,7 +472,7 @@ impl BlockBuilder<'_> {
 
         // division by zero: undefined, just avoid it by using 1 as denom instead
         let one = self.ir_value(1i32);
-        let is_div_by_zero = self.bd.ins().icmp_imm(IntCC::Equal, rb, 0);
+        let is_div_by_zero = self.bd.ins().icmp_imm_u(IntCC::Equal, rb, 0);
         let denom = self.bd.ins().select(is_div_by_zero, one, rb);
 
         let result = self.bd.ins().udiv(ra, denom);

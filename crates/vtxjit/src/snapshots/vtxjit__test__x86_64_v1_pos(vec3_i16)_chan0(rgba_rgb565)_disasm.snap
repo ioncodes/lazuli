@@ -83,26 +83,24 @@ block3:
 block2:
   movq <offset:1>+(%rsp), %rax
   movdqu (%rax), %xmm0
-  uninit  %rcx
-  xorq %rcx, %rcx
-  movq %rcx, %xmm2
+  uninit  %xmm2
+  pxor %xmm2, %xmm2
   movl $0x1, %esi
   movq %rdx, %r14
   movzbq (%r14), %rcx
   movq %rsi, %rdx
   shlq %cl, %rdx
   movq %rdx, %xmm1
-  por %xmm1, %xmm2
-  uninit  %xmm1
-  pxor %xmm1, %xmm1
+  movdqa %xmm2, %xmm6
+  por %xmm1, %xmm6
   movzbq %cl, %rcx
   andq $0x1f, %rcx
   leaq 0x40(%rcx), %rcx
   shlq %cl, %rsi
-  movq %rsi, %xmm3
-  punpcklqdq %xmm3, %xmm1
-  por %xmm1, %xmm2
-  por %xmm2, %xmm0
+  movq %rsi, %xmm1
+  punpcklqdq %xmm1, %xmm2
+  por %xmm2, %xmm6
+  por %xmm6, %xmm0
   movdqu %xmm0, (%rax)
   movq 0x10(%rsp), %rbx
   movq 0x18(%rsp), %r12

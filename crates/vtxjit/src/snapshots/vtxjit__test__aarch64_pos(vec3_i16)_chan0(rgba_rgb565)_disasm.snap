@@ -47,20 +47,18 @@ block3:
   b label1
 block2:
   ldr q0, [x5]
-  movz x0, #0
-  fmov d1, x0
+  movi v1.16b, #0
   movz x0, #1
   ldrb w1, [x2]
   lsl x2, x0, x1
   fmov d2, x2
-  orr v1.16b, v1.16b, v2.16b
-  movi v2.16b, #0
+  orr v2.16b, v1.16b, v2.16b
   uxtb w1, w1
   and x1, x1, #31
   add x1, x1, #64
   lsl x0, x0, x1
-  mov v2.d[1], v2.d[1], x0
-  orr v1.16b, v1.16b, v2.16b
+  mov v1.d[1], v1.d[1], x0
+  orr v1.16b, v2.16b, v1.16b
   orr v0.16b, v0.16b, v1.16b
   str q0, [x5]
   ldp fp, lr, [sp], #16

@@ -21,6 +21,7 @@ block0:
   lsr w0, w0, #13
   tbnz x0, #0, label4 ; b label1
 block3:
+  mov x1, x0
   mov x2, x21
   mov x3, x20
   mov x4, x19
@@ -67,10 +68,9 @@ block4:
   load_ext_name_far x4, User(userextname1)+0
   mov x0, x21
   blr x4
-  subs xzr, x0, #0
-  mov x1, x0
-  b.ne label6 ; b label5
+  cbnz x0, label6 ; b label5
 block6:
+  mov x1, x0
   mov x2, x21
   mov x3, x20
   mov x4, x19
@@ -87,9 +87,7 @@ block1:
   load_ext_name_far x4, User(userextname1)+0
   mov x0, x21
   blr x4
-  subs xzr, x0, #0
-  mov x1, x0
-  b.ne label3 ; b label2
+  cbnz x0, label3 ; b label2
 block2:
   add sp, sp, #16
   ldp x19, x20, [sp], #16

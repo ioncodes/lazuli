@@ -95,12 +95,12 @@ impl BlockBuilder<'_> {
         let new_msr = self.bd.ins().bitselect(mask, srr1, msr);
 
         // clear bit 18
-        let new_msr = self.bd.ins().band_imm(new_msr, !(1 << 18));
+        let new_msr = self.bd.ins().band_imm_u(new_msr, !(1 << 18));
 
         // TODO: deal with new_msr exceptions enabled
 
         // set PC to SRR0
-        let new_pc = self.bd.ins().band_imm(srr0, !0b11);
+        let new_pc = self.bd.ins().band_imm_u(srr0, !0b11);
         self.set(Reg::PC, new_pc);
         self.set(Reg::MSR, new_msr);
 

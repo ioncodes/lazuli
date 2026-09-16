@@ -14,11 +14,8 @@ use crate::builder::attr::AttributeExt;
 use crate::parser::Config;
 use crate::{Codegen, UnpackedDefaultMatrices};
 
-const MEMFLAGS: ir::MemFlags = ir::MemFlags::new().with_notrap().with_can_move();
-const MEMFLAGS_READONLY: ir::MemFlags = ir::MemFlags::new()
-    .with_notrap()
-    .with_can_move()
-    .with_readonly();
+const MEMFLAGS: ir::MemFlagsData = ir::MemFlagsData::new().with_notrap().with_can_move();
+const MEMFLAGS_READONLY: ir::MemFlagsData = MEMFLAGS.with_readonly();
 
 struct Array {
     base: ir::Value,
@@ -46,6 +43,7 @@ struct Vars {
 }
 
 pub struct ParserBuilder<'ctx> {
+    codegen: &'ctx Codegen,
     bd: frontend::FunctionBuilder<'ctx>,
     config: Config,
     consts: Consts,
@@ -114,6 +112,7 @@ impl<'ctx> ParserBuilder<'ctx> {
         };
 
         Self {
+            codegen,
             bd,
             config,
             consts,
@@ -132,8 +131,8 @@ impl<'ctx> ParserBuilder<'ctx> {
 
         let mtx_idx = self.bd.ins().uextend(ir::types::I64, mtx_idx);
         let bit_idx = if is_normal {
-            let masked = self.bd.ins().band_imm(mtx_idx, 0x1F);
-            self.bd.ins().iadd_imm(masked, 64)
+            let masked = self.bd.ins().band_imm_u(mtx_idx, 0x1F);
+            self.bd.ins().iadd_imm_u(masked, 64)
         } else {
             mtx_idx
         };
@@ -156,7 +155,10 @@ impl<'ctx> ParserBuilder<'ctx> {
     fn parse_direct<A: AttributeExt>(&mut self) {
         let descriptor = A::get_descriptor(&self.config.vat);
         let consumed = A::parse(&descriptor, self, self.vars.data_ptr);
-        self.vars.data_ptr = self.bd.ins().iadd_imm(self.vars.data_ptr, consumed as i64);
+        self.vars.data_ptr = self
+            .bd
+            .ins()
+            .iadd_imm_u(self.vars.data_ptr, consumed as i64);
     }
 
     fn parse_indexed<A: AttributeExt>(&mut self, index_ty: ir::Type) {
@@ -190,7 +192,7 @@ impl<'ctx> ParserBuilder<'ctx> {
         self.vars.data_ptr = self
             .bd
             .ins()
-            .iadd_imm(self.vars.data_ptr, index_ty.bytes() as i64);
+            .iadd_imm_u(self.vars.data_ptr, index_ty.bytes() as i64);
     }
 
     fn parse<A: AttributeExt>(&mut self) {
@@ -350,8 +352,8 @@ impl<'ctx> ParserBuilder<'ctx> {
         self.vars.vertex_ptr = self
             .bd
             .ins()
-            .iadd_imm(self.vars.vertex_ptr, size_of::<Vertex>() as i64);
-        let loop_iter = self.bd.ins().iadd_imm(loop_iter, 1);
+            .iadd_imm_u(self.vars.vertex_ptr, size_of::<Vertex>() as i64);
+        let loop_iter = self.bd.ins().iadd_imm_u(loop_iter, 1);
         self.bd.ins().jump(
             iter_bb,
             &[
@@ -379,6 +381,6 @@ impl<'ctx> ParserBuilder<'ctx> {
             .store(MEMFLAGS, new, self.consts.mtx_set_ptr, 0);
 
         self.bd.ins().return_(&[]);
-        self.bd.finalize();
+        self.bd.finalize(self.codegen.isa.frontend_config());
     }
 }

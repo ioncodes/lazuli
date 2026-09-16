@@ -378,7 +378,7 @@ impl Jit {
             .call_indirect(block_sig, block_ptr, &[ctx_ptr, regs_ptr, fmem_ptr]);
 
         builder.ins().return_(&[]);
-        builder.finalize();
+        builder.finalize(codegen.isa.frontend_config());
 
         let artifact = codegen.compile(func, false).unwrap();
         let alloc = codegen.module.allocate_code(&artifact.code);

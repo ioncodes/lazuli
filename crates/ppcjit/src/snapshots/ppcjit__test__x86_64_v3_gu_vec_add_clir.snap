@@ -54,373 +54,415 @@ function u0:0(i64, i64, i64) tail {
     fn21 = u0:22 sig13
 
                                 block0(v0: i64, v1: i64, v2: i64):
-@0000                               v3 = load.i32 notrap aligned v1+680
+@0000                               v3 = load.i32 notrap v1+680
 @0000                               v4 = iconst.i32 13
 @0000                               v5 = ushr v3, v4  ; v4 = 13
-@0000                               v6 = band_imm v5, 1
-@0000                               v7 = ireduce.i8 v6
-@0000                               brif v7, block2, block1
+@0000                               v6 = iconst.i32 1
+@0000                               v7 = band v5, v6  ; v6 = 1
+@0000                               v8 = ireduce.i8 v7
+@0000                               brif v8, block2, block1
 
                                 block1 cold:
-@0000                               v8 = iconst.i16 2048
-@0000                               call fn0(v1, v8)  ; v8 = 2048
-@0000                               v9 = global_value.i64 gv0
-@0000                               v10 = iconst.i64 0
-@0000                               v11 = iconst.i32 0x0002_0001
-@0000                               v12 = call fn1(v0, v9, v10, v11)  ; v10 = 0, v11 = 0x0002_0001
-@0000                               v13 = icmp_imm ne v12, 0
-@0000                               brif v13, block3, block4
+@0000                               v9 = iconst.i16 2048
+@0000                               call fn0(v1, v9)  ; v9 = 2048
+@0000                               v10 = symbol_value.i64 gv0
+@0000                               v11 = iconst.i64 0
+@0000                               v12 = iconst.i32 0x0002_0001
+@0000                               v13 = call fn1(v0, v10, v11, v12)  ; v11 = 0, v12 = 0x0002_0001
+@0000                               v14 = iconst.i64 0
+@0000                               v15 = icmp ne v13, v14  ; v14 = 0
+@0000                               brif v15, block3, block4
 
                                 block3:
-@0001                               return_call_indirect.i64 sig0, v12(v0, v1, v2)
+@0001                               return_call_indirect.i64 sig0, v13(v0, v1, v2)
 
                                 block4 cold:
 @0001                               return
 
                                 block2:
-@0000                               v14 = load.i32 notrap aligned v1+20
-@0000                               v15 = iadd_imm v14, 0
-@0000                               v16 = load.i32 notrap aligned v1+872
-@0000                               v17 = stack_addr.i64 ss0
-@0000                               v18 = call fn10(v0, v15, v16, v17)
-@0000                               brif v18, block6, block5
+@0000                               v16 = load.i32 notrap v1+20
+@0000                               v17 = iconst.i32 0
+@0000                               v18 = iadd v16, v17  ; v17 = 0
+@0000                               v19 = load.i32 notrap v1+872
+@0000                               v20 = stack_addr.i64 ss0
+@0000                               v21 = call fn10(v0, v18, v19, v20)
+@0000                               brif v21, block6, block5
 
                                 block5 cold:
-@0000                               store.i32 notrap aligned v15, v1+864
-@0000                               v19 = iconst.i16 768
-@0000                               call fn0(v1, v19)  ; v19 = 768
-@0000                               v20 = global_value.i64 gv1
-@0000                               v21 = iconst.i64 0
-@0000                               v22 = iconst.i32 0x0002_0001
-@0000                               v23 = call fn1(v0, v20, v21, v22)  ; v21 = 0, v22 = 0x0002_0001
-@0000                               v24 = icmp_imm ne v23, 0
-@0000                               brif v24, block7, block8
+@0000                               store.i32 notrap v18, v1+864
+@0000                               v22 = iconst.i16 768
+@0000                               call fn0(v1, v22)  ; v22 = 768
+@0000                               v23 = symbol_value.i64 gv1
+@0000                               v24 = iconst.i64 0
+@0000                               v25 = iconst.i32 0x0002_0001
+@0000                               v26 = call fn1(v0, v23, v24, v25)  ; v24 = 0, v25 = 0x0002_0001
+@0000                               v27 = iconst.i64 0
+@0000                               v28 = icmp ne v26, v27  ; v27 = 0
+@0000                               brif v28, block7, block8
 
                                 block7:
-@0001                               return_call_indirect.i64 sig0, v23(v0, v1, v2)
+@0001                               return_call_indirect.i64 sig0, v26(v0, v1, v2)
 
                                 block8 cold:
 @0001                               return
 
                                 block6:
-@0000                               v25 = stack_load.f64 ss0
-@0000                               v26 = uextend.i32 v18
-@0000                               v27 = iadd.i32 v15, v26
-@0000                               v28 = stack_addr.i64 ss0
-@0000                               v29 = call fn10(v0, v27, v16, v28)
-@0000                               brif v29, block10, block9
+@0000                               v29 = stack_addr.i64 ss0
+@0000                               v30 = load.f64 notrap v29
+@0000                               v31 = uextend.i32 v21
+@0000                               v32 = iadd.i32 v18, v31
+@0000                               v33 = stack_addr.i64 ss0
+@0000                               v34 = call fn10(v0, v32, v19, v33)
+@0000                               brif v34, block10, block9
 
                                 block9 cold:
-@0000                               store.i32 notrap aligned v27, v1+864
-@0000                               v30 = iconst.i16 768
-@0000                               call fn0(v1, v30)  ; v30 = 768
-@0000                               v31 = global_value.i64 gv2
-@0000                               v32 = iconst.i64 0
-@0000                               v33 = iconst.i32 0x0002_0001
-@0000                               v34 = call fn1(v0, v31, v32, v33)  ; v32 = 0, v33 = 0x0002_0001
-@0000                               v35 = icmp_imm ne v34, 0
-@0000                               brif v35, block11, block12
+@0000                               store.i32 notrap v32, v1+864
+@0000                               v35 = iconst.i16 768
+@0000                               call fn0(v1, v35)  ; v35 = 768
+@0000                               v36 = symbol_value.i64 gv2
+@0000                               v37 = iconst.i64 0
+@0000                               v38 = iconst.i32 0x0002_0001
+@0000                               v39 = call fn1(v0, v36, v37, v38)  ; v37 = 0, v38 = 0x0002_0001
+@0000                               v40 = iconst.i64 0
+@0000                               v41 = icmp ne v39, v40  ; v40 = 0
+@0000                               brif v41, block11, block12
 
                                 block11:
-@0001                               return_call_indirect.i64 sig0, v34(v0, v1, v2)
+@0001                               return_call_indirect.i64 sig0, v39(v0, v1, v2)
 
                                 block12 cold:
 @0001                               return
 
                                 block10:
-@0000                               v36 = stack_load.f64 ss0
-@0000                               v37 = uextend.i32 v29
-@0000                               v38 = scalar_to_vector.f64x2 v25
-@0000                               v39 = insertlane v38, v36, 1
-@0000                               v40 = load.i32 notrap aligned v1
-@0000                               v41 = iadd_imm v40, 4
-@0001                               v42 = load.i32 notrap aligned v1+24
-@0001                               v43 = iadd_imm v42, 0
-@0001                               v44 = load.i32 notrap aligned v1+872
-@0001                               v45 = stack_addr.i64 ss0
-@0001                               v46 = call fn10(v0, v43, v44, v45)
-@0001                               brif v46, block14, block13
+@0000                               v42 = stack_addr.i64 ss0
+@0000                               v43 = load.f64 notrap v42
+@0000                               v44 = uextend.i32 v34
+@0000                               v45 = scalar_to_vector.f64x2 v30
+@0000                               v46 = insertlane v45, v43, 1
+@0000                               v47 = load.i32 notrap v1
+@0000                               v48 = iconst.i32 4
+@0000                               v49 = iadd v47, v48  ; v48 = 4
+@0001                               v50 = load.i32 notrap v1+24
+@0001                               v51 = iconst.i32 0
+@0001                               v52 = iadd v50, v51  ; v51 = 0
+@0001                               v53 = load.i32 notrap v1+872
+@0001                               v54 = stack_addr.i64 ss0
+@0001                               v55 = call fn10(v0, v52, v53, v54)
+@0001                               brif v55, block14, block13
 
                                 block13 cold:
-@0001                               store.i32 notrap aligned v43, v1+864
-@0001                               v47 = iconst.i16 768
-@0001                               store.i32 notrap aligned v41, v1
-@0001                               store.f64x2 notrap aligned v39, v1+168
-@0001                               call fn0(v1, v47)  ; v47 = 768
-@0001                               v48 = global_value.i64 gv3
-@0001                               v49 = iconst.i64 0
-@0001                               v50 = iconst.i32 0x0004_0002
-@0001                               v51 = call fn1(v0, v48, v49, v50)  ; v49 = 0, v50 = 0x0004_0002
-@0001                               v52 = icmp_imm ne v51, 0
-@0001                               brif v52, block15, block16
+@0001                               store.i32 notrap v52, v1+864
+@0001                               v56 = iconst.i16 768
+@0001                               store.i32 notrap v49, v1
+@0001                               store.f64x2 notrap v46, v1+168
+@0001                               call fn0(v1, v56)  ; v56 = 768
+@0001                               v57 = symbol_value.i64 gv3
+@0001                               v58 = iconst.i64 0
+@0001                               v59 = iconst.i32 0x0004_0002
+@0001                               v60 = call fn1(v0, v57, v58, v59)  ; v58 = 0, v59 = 0x0004_0002
+@0001                               v61 = iconst.i64 0
+@0001                               v62 = icmp ne v60, v61  ; v61 = 0
+@0001                               brif v62, block15, block16
 
                                 block15:
-@0002                               return_call_indirect.i64 sig0, v51(v0, v1, v2)
+@0002                               return_call_indirect.i64 sig0, v60(v0, v1, v2)
 
                                 block16 cold:
 @0002                               return
 
                                 block14:
-@0001                               v53 = stack_load.f64 ss0
-@0001                               v54 = uextend.i32 v46
-@0001                               v55 = iadd.i32 v43, v54
-@0001                               v56 = stack_addr.i64 ss0
-@0001                               v57 = call fn10(v0, v55, v44, v56)
-@0001                               brif v57, block18, block17
+@0001                               v63 = stack_addr.i64 ss0
+@0001                               v64 = load.f64 notrap v63
+@0001                               v65 = uextend.i32 v55
+@0001                               v66 = iadd.i32 v52, v65
+@0001                               v67 = stack_addr.i64 ss0
+@0001                               v68 = call fn10(v0, v66, v53, v67)
+@0001                               brif v68, block18, block17
 
                                 block17 cold:
-@0001                               store.i32 notrap aligned v55, v1+864
-@0001                               v58 = iconst.i16 768
-@0001                               store.i32 notrap aligned v41, v1
-@0001                               store.f64x2 notrap aligned v39, v1+168
-@0001                               call fn0(v1, v58)  ; v58 = 768
-@0001                               v59 = global_value.i64 gv4
-@0001                               v60 = iconst.i64 0
-@0001                               v61 = iconst.i32 0x0004_0002
-@0001                               v62 = call fn1(v0, v59, v60, v61)  ; v60 = 0, v61 = 0x0004_0002
-@0001                               v63 = icmp_imm ne v62, 0
-@0001                               brif v63, block19, block20
+@0001                               store.i32 notrap v66, v1+864
+@0001                               v69 = iconst.i16 768
+@0001                               store.i32 notrap v49, v1
+@0001                               store.f64x2 notrap v46, v1+168
+@0001                               call fn0(v1, v69)  ; v69 = 768
+@0001                               v70 = symbol_value.i64 gv4
+@0001                               v71 = iconst.i64 0
+@0001                               v72 = iconst.i32 0x0004_0002
+@0001                               v73 = call fn1(v0, v70, v71, v72)  ; v71 = 0, v72 = 0x0004_0002
+@0001                               v74 = iconst.i64 0
+@0001                               v75 = icmp ne v73, v74  ; v74 = 0
+@0001                               brif v75, block19, block20
 
                                 block19:
-@0002                               return_call_indirect.i64 sig0, v62(v0, v1, v2)
+@0002                               return_call_indirect.i64 sig0, v73(v0, v1, v2)
 
                                 block20 cold:
 @0002                               return
 
                                 block18:
-@0001                               v64 = stack_load.f64 ss0
-@0001                               v65 = uextend.i32 v57
-@0001                               v66 = scalar_to_vector.f64x2 v53
-@0001                               v67 = insertlane v66, v64, 1
-@0001                               v68 = iadd_imm.i32 v41, 4
-@0002                               v69 = fadd.f64x2 v39, v67
-@0002                               v70 = extractlane v69, 0
-@0002                               v71 = f64const 0.0
-@0002                               v72 = fcmp lt v70, v71  ; v71 = 0.0
-@0002                               v73 = fcmp gt v70, v71  ; v71 = 0.0
-@0002                               v74 = fcmp eq v70, v71  ; v71 = 0.0
-@0002                               v75 = fcmp uno v70, v71  ; v71 = 0.0
-@0002                               v76 = load.i32 notrap aligned v1+652
-@0002                               v77 = uextend.i32 v72
-@0002                               v78 = uextend.i32 v73
-@0002                               v79 = uextend.i32 v74
-@0002                               v80 = uextend.i32 v75
-@0002                               v81 = ishl_imm v77, 15
-@0002                               v82 = ishl_imm v78, 14
-@0002                               v83 = ishl_imm v79, 13
-@0002                               v84 = ishl_imm v80, 12
-@0002                               v85 = bor v81, v82
-@0002                               v86 = bor v85, v83
-@0002                               v87 = bor v86, v84
-@0002                               v88 = iconst.i32 0x0001_f000
-@0002                               v89 = band_not v76, v88  ; v88 = 0x0001_f000
-@0002                               v90 = bor v89, v87
-@0002                               v91 = iadd_imm v68, 4
-@0003                               v92 = load.i32 notrap aligned v1+28
-@0003                               v93 = iadd_imm v92, 0
-@0003                               v94 = extractlane v69, 0
-@0003                               v95 = load.i32 notrap aligned v1+872
-@0003                               v96 = call fn11(v0, v93, v95, v94)
-@0003                               brif v96, block22, block21
+@0001                               v76 = stack_addr.i64 ss0
+@0001                               v77 = load.f64 notrap v76
+@0001                               v78 = uextend.i32 v68
+@0001                               v79 = scalar_to_vector.f64x2 v64
+@0001                               v80 = insertlane v79, v77, 1
+@0001                               v81 = iconst.i32 4
+@0001                               v82 = iadd.i32 v49, v81  ; v81 = 4
+@0002                               v83 = fadd.f64x2 v46, v80
+@0002                               v84 = extractlane v83, 0
+@0002                               v85 = f64const 0.0
+@0002                               v86 = fcmp lt v84, v85  ; v85 = 0.0
+@0002                               v87 = fcmp gt v84, v85  ; v85 = 0.0
+@0002                               v88 = fcmp eq v84, v85  ; v85 = 0.0
+@0002                               v89 = fcmp uno v84, v85  ; v85 = 0.0
+@0002                               v90 = load.i32 notrap v1+652
+@0002                               v91 = uextend.i32 v86
+@0002                               v92 = uextend.i32 v87
+@0002                               v93 = uextend.i32 v88
+@0002                               v94 = uextend.i32 v89
+@0002                               v95 = iconst.i32 15
+@0002                               v96 = ishl v91, v95  ; v95 = 15
+@0002                               v97 = iconst.i32 14
+@0002                               v98 = ishl v92, v97  ; v97 = 14
+@0002                               v99 = iconst.i32 13
+@0002                               v100 = ishl v93, v99  ; v99 = 13
+@0002                               v101 = iconst.i32 12
+@0002                               v102 = ishl v94, v101  ; v101 = 12
+@0002                               v103 = bor v96, v98
+@0002                               v104 = bor v103, v100
+@0002                               v105 = bor v104, v102
+@0002                               v106 = iconst.i32 0x0001_f000
+@0002                               v107 = bnot v106  ; v106 = 0x0001_f000
+@0002                               v108 = band v90, v107
+@0002                               v109 = bor v108, v105
+@0002                               v110 = iconst.i32 4
+@0002                               v111 = iadd v82, v110  ; v110 = 4
+@0003                               v112 = load.i32 notrap v1+28
+@0003                               v113 = iconst.i32 0
+@0003                               v114 = iadd v112, v113  ; v113 = 0
+@0003                               v115 = extractlane v83, 0
+@0003                               v116 = load.i32 notrap v1+872
+@0003                               v117 = call fn11(v0, v114, v116, v115)
+@0003                               brif v117, block22, block21
 
                                 block21 cold:
-@0003                               store.i32 notrap aligned v93, v1+864
-@0003                               v97 = iconst.i16 768
-@0003                               store.i32 notrap aligned v91, v1
-@0003                               store.f64x2 notrap aligned v39, v1+168
-@0003                               store.i32 notrap aligned v90, v1+652
-@0003                               store.f64x2 notrap aligned v69, v1+232
-@0003                               store.f64x2 notrap aligned v67, v1+200
-@0003                               call fn0(v1, v97)  ; v97 = 768
-@0003                               v98 = global_value.i64 gv5
-@0003                               v99 = iconst.i64 0
-@0003                               v100 = iconst.i32 0x0008_0004
-@0003                               v101 = call fn1(v0, v98, v99, v100)  ; v99 = 0, v100 = 0x0008_0004
-@0003                               v102 = icmp_imm ne v101, 0
-@0003                               brif v102, block23, block24
+@0003                               store.i32 notrap v114, v1+864
+@0003                               v118 = iconst.i16 768
+@0003                               store.i32 notrap v111, v1
+@0003                               store.f64x2 notrap v46, v1+168
+@0003                               store.i32 notrap v109, v1+652
+@0003                               store.f64x2 notrap v83, v1+232
+@0003                               store.f64x2 notrap v80, v1+200
+@0003                               call fn0(v1, v118)  ; v118 = 768
+@0003                               v119 = symbol_value.i64 gv5
+@0003                               v120 = iconst.i64 0
+@0003                               v121 = iconst.i32 0x0008_0004
+@0003                               v122 = call fn1(v0, v119, v120, v121)  ; v120 = 0, v121 = 0x0008_0004
+@0003                               v123 = iconst.i64 0
+@0003                               v124 = icmp ne v122, v123  ; v123 = 0
+@0003                               brif v124, block23, block24
 
                                 block23:
-@0004                               return_call_indirect.i64 sig0, v101(v0, v1, v2)
+@0004                               return_call_indirect.i64 sig0, v122(v0, v1, v2)
 
                                 block24 cold:
 @0004                               return
 
                                 block22:
-@0003                               v103 = uextend.i32 v96
-@0003                               v104 = extractlane.f64x2 v69, 1
-@0003                               v105 = iadd.i32 v93, v103
-@0003                               v106 = call fn11(v0, v105, v95, v104)
-@0003                               brif v106, block26, block25
+@0003                               v125 = uextend.i32 v117
+@0003                               v126 = extractlane.f64x2 v83, 1
+@0003                               v127 = iadd.i32 v114, v125
+@0003                               v128 = call fn11(v0, v127, v116, v126)
+@0003                               brif v128, block26, block25
 
                                 block25 cold:
-@0003                               store.i32 notrap aligned v105, v1+864
-@0003                               v107 = iconst.i16 768
-@0003                               store.i32 notrap aligned v91, v1
-@0003                               store.f64x2 notrap aligned v39, v1+168
-@0003                               store.i32 notrap aligned v90, v1+652
-@0003                               store.f64x2 notrap aligned v69, v1+232
-@0003                               store.f64x2 notrap aligned v67, v1+200
-@0003                               call fn0(v1, v107)  ; v107 = 768
-@0003                               v108 = global_value.i64 gv6
-@0003                               v109 = iconst.i64 0
-@0003                               v110 = iconst.i32 0x0008_0004
-@0003                               v111 = call fn1(v0, v108, v109, v110)  ; v109 = 0, v110 = 0x0008_0004
-@0003                               v112 = icmp_imm ne v111, 0
-@0003                               brif v112, block27, block28
+@0003                               store.i32 notrap v127, v1+864
+@0003                               v129 = iconst.i16 768
+@0003                               store.i32 notrap v111, v1
+@0003                               store.f64x2 notrap v46, v1+168
+@0003                               store.i32 notrap v109, v1+652
+@0003                               store.f64x2 notrap v83, v1+232
+@0003                               store.f64x2 notrap v80, v1+200
+@0003                               call fn0(v1, v129)  ; v129 = 768
+@0003                               v130 = symbol_value.i64 gv6
+@0003                               v131 = iconst.i64 0
+@0003                               v132 = iconst.i32 0x0008_0004
+@0003                               v133 = call fn1(v0, v130, v131, v132)  ; v131 = 0, v132 = 0x0008_0004
+@0003                               v134 = iconst.i64 0
+@0003                               v135 = icmp ne v133, v134  ; v134 = 0
+@0003                               brif v135, block27, block28
 
                                 block27:
-@0004                               return_call_indirect.i64 sig0, v111(v0, v1, v2)
+@0004                               return_call_indirect.i64 sig0, v133(v0, v1, v2)
 
                                 block28 cold:
 @0004                               return
 
                                 block26:
-@0003                               v113 = uextend.i32 v106
-@0003                               v114 = iadd_imm.i32 v91, 4
-@0004                               v115 = iadd_imm.i32 v14, 8
-@0004                               v116 = load.i32 notrap aligned v1+872
-@0004                               v117 = stack_addr.i64 ss0
-@0004                               v118 = call fn10(v0, v115, v116, v117)
-@0004                               brif v118, block30, block29
+@0003                               v136 = uextend.i32 v128
+@0003                               v137 = iconst.i32 4
+@0003                               v138 = iadd.i32 v111, v137  ; v137 = 4
+@0004                               v139 = iconst.i32 8
+@0004                               v140 = iadd.i32 v16, v139  ; v139 = 8
+@0004                               v141 = load.i32 notrap v1+872
+@0004                               v142 = stack_addr.i64 ss0
+@0004                               v143 = call fn10(v0, v140, v141, v142)
+@0004                               brif v143, block30, block29
 
                                 block29 cold:
-@0004                               store.i32 notrap aligned v115, v1+864
-@0004                               v119 = iconst.i16 768
-@0004                               store.i32 notrap aligned v114, v1
-@0004                               store.f64x2 notrap aligned v39, v1+168
-@0004                               store.i32 notrap aligned v90, v1+652
-@0004                               store.f64x2 notrap aligned v69, v1+232
-@0004                               store.f64x2 notrap aligned v67, v1+200
-@0004                               call fn0(v1, v119)  ; v119 = 768
-@0004                               v120 = global_value.i64 gv7
-@0004                               v121 = iconst.i64 0
-@0004                               v122 = iconst.i32 0x000a_0005
-@0004                               v123 = call fn1(v0, v120, v121, v122)  ; v121 = 0, v122 = 0x000a_0005
-@0004                               v124 = icmp_imm ne v123, 0
-@0004                               brif v124, block31, block32
+@0004                               store.i32 notrap v140, v1+864
+@0004                               v144 = iconst.i16 768
+@0004                               store.i32 notrap v138, v1
+@0004                               store.f64x2 notrap v46, v1+168
+@0004                               store.i32 notrap v109, v1+652
+@0004                               store.f64x2 notrap v83, v1+232
+@0004                               store.f64x2 notrap v80, v1+200
+@0004                               call fn0(v1, v144)  ; v144 = 768
+@0004                               v145 = symbol_value.i64 gv7
+@0004                               v146 = iconst.i64 0
+@0004                               v147 = iconst.i32 0x000a_0005
+@0004                               v148 = call fn1(v0, v145, v146, v147)  ; v146 = 0, v147 = 0x000a_0005
+@0004                               v149 = iconst.i64 0
+@0004                               v150 = icmp ne v148, v149  ; v149 = 0
+@0004                               brif v150, block31, block32
 
                                 block31:
-@0005                               return_call_indirect.i64 sig0, v123(v0, v1, v2)
+@0005                               return_call_indirect.i64 sig0, v148(v0, v1, v2)
 
                                 block32 cold:
 @0005                               return
 
                                 block30:
-@0004                               v125 = stack_load.f64 ss0
-@0004                               v126 = uextend.i32 v118
-@0004                               v127 = f64const 0x1.0000000000000p0
-@0004                               v128 = scalar_to_vector.f64x2 v125
-@0004                               v129 = insertlane v128, v127, 1  ; v127 = 0x1.0000000000000p0
-@0004                               v130 = iadd_imm.i32 v114, 4
-@0005                               v131 = iadd_imm.i32 v42, 8
-@0005                               v132 = load.i32 notrap aligned v1+872
-@0005                               v133 = stack_addr.i64 ss0
-@0005                               v134 = call fn10(v0, v131, v132, v133)
-@0005                               brif v134, block34, block33
+@0004                               v151 = stack_addr.i64 ss0
+@0004                               v152 = load.f64 notrap v151
+@0004                               v153 = uextend.i32 v143
+@0004                               v154 = f64const 0x1.0000000000000p0
+@0004                               v155 = scalar_to_vector.f64x2 v152
+@0004                               v156 = insertlane v155, v154, 1  ; v154 = 0x1.0000000000000p0
+@0004                               v157 = iconst.i32 4
+@0004                               v158 = iadd.i32 v138, v157  ; v157 = 4
+@0005                               v159 = iconst.i32 8
+@0005                               v160 = iadd.i32 v50, v159  ; v159 = 8
+@0005                               v161 = load.i32 notrap v1+872
+@0005                               v162 = stack_addr.i64 ss0
+@0005                               v163 = call fn10(v0, v160, v161, v162)
+@0005                               brif v163, block34, block33
 
                                 block33 cold:
-@0005                               store.i32 notrap aligned v131, v1+864
-@0005                               v135 = iconst.i16 768
-@0005                               store.i32 notrap aligned v130, v1
-@0005                               store.f64x2 notrap aligned v39, v1+168
-@0005                               store.i32 notrap aligned v90, v1+652
-@0005                               store.f64x2 notrap aligned v69, v1+232
-@0005                               store.f64x2 notrap aligned v67, v1+200
-@0005                               store.f64x2 notrap aligned v129, v1+184
-@0005                               call fn0(v1, v135)  ; v135 = 768
-@0005                               v136 = global_value.i64 gv8
-@0005                               v137 = iconst.i64 0
-@0005                               v138 = iconst.i32 0x000c_0006
-@0005                               v139 = call fn1(v0, v136, v137, v138)  ; v137 = 0, v138 = 0x000c_0006
-@0005                               v140 = icmp_imm ne v139, 0
-@0005                               brif v140, block35, block36
+@0005                               store.i32 notrap v160, v1+864
+@0005                               v164 = iconst.i16 768
+@0005                               store.i32 notrap v158, v1
+@0005                               store.f64x2 notrap v46, v1+168
+@0005                               store.i32 notrap v109, v1+652
+@0005                               store.f64x2 notrap v83, v1+232
+@0005                               store.f64x2 notrap v80, v1+200
+@0005                               store.f64x2 notrap v156, v1+184
+@0005                               call fn0(v1, v164)  ; v164 = 768
+@0005                               v165 = symbol_value.i64 gv8
+@0005                               v166 = iconst.i64 0
+@0005                               v167 = iconst.i32 0x000c_0006
+@0005                               v168 = call fn1(v0, v165, v166, v167)  ; v166 = 0, v167 = 0x000c_0006
+@0005                               v169 = iconst.i64 0
+@0005                               v170 = icmp ne v168, v169  ; v169 = 0
+@0005                               brif v170, block35, block36
 
                                 block35:
-@0006                               return_call_indirect.i64 sig0, v139(v0, v1, v2)
+@0006                               return_call_indirect.i64 sig0, v168(v0, v1, v2)
 
                                 block36 cold:
 @0006                               return
 
                                 block34:
-@0005                               v141 = stack_load.f64 ss0
-@0005                               v142 = uextend.i32 v134
-@0005                               v143 = f64const 0x1.0000000000000p0
-@0005                               v144 = scalar_to_vector.f64x2 v141
-@0005                               v145 = insertlane v144, v143, 1  ; v143 = 0x1.0000000000000p0
-@0005                               v146 = iadd_imm.i32 v130, 4
-@0006                               v147 = fadd.f64x2 v129, v145
-@0006                               v148 = extractlane v147, 0
-@0006                               v149 = f64const 0.0
-@0006                               v150 = fcmp lt v148, v149  ; v149 = 0.0
-@0006                               v151 = fcmp gt v148, v149  ; v149 = 0.0
-@0006                               v152 = fcmp eq v148, v149  ; v149 = 0.0
-@0006                               v153 = fcmp uno v148, v149  ; v149 = 0.0
-@0006                               v154 = uextend.i32 v150
-@0006                               v155 = uextend.i32 v151
-@0006                               v156 = uextend.i32 v152
-@0006                               v157 = uextend.i32 v153
-@0006                               v158 = ishl_imm v154, 15
-@0006                               v159 = ishl_imm v155, 14
-@0006                               v160 = ishl_imm v156, 13
-@0006                               v161 = ishl_imm v157, 12
-@0006                               v162 = bor v158, v159
-@0006                               v163 = bor v162, v160
-@0006                               v164 = bor v163, v161
-@0006                               v165 = iconst.i32 0x0001_f000
-@0006                               v166 = band_not.i32 v90, v165  ; v165 = 0x0001_f000
-@0006                               v167 = bor v166, v164
-@0006                               v168 = iadd_imm v146, 4
-@0007                               v169 = iadd_imm.i32 v92, 8
-@0007                               v170 = extractlane v147, 0
-@0007                               v171 = load.i32 notrap aligned v1+872
-@0007                               v172 = call fn11(v0, v169, v171, v170)
-@0007                               brif v172, block38, block37
+@0005                               v171 = stack_addr.i64 ss0
+@0005                               v172 = load.f64 notrap v171
+@0005                               v173 = uextend.i32 v163
+@0005                               v174 = f64const 0x1.0000000000000p0
+@0005                               v175 = scalar_to_vector.f64x2 v172
+@0005                               v176 = insertlane v175, v174, 1  ; v174 = 0x1.0000000000000p0
+@0005                               v177 = iconst.i32 4
+@0005                               v178 = iadd.i32 v158, v177  ; v177 = 4
+@0006                               v179 = fadd.f64x2 v156, v176
+@0006                               v180 = extractlane v179, 0
+@0006                               v181 = f64const 0.0
+@0006                               v182 = fcmp lt v180, v181  ; v181 = 0.0
+@0006                               v183 = fcmp gt v180, v181  ; v181 = 0.0
+@0006                               v184 = fcmp eq v180, v181  ; v181 = 0.0
+@0006                               v185 = fcmp uno v180, v181  ; v181 = 0.0
+@0006                               v186 = uextend.i32 v182
+@0006                               v187 = uextend.i32 v183
+@0006                               v188 = uextend.i32 v184
+@0006                               v189 = uextend.i32 v185
+@0006                               v190 = iconst.i32 15
+@0006                               v191 = ishl v186, v190  ; v190 = 15
+@0006                               v192 = iconst.i32 14
+@0006                               v193 = ishl v187, v192  ; v192 = 14
+@0006                               v194 = iconst.i32 13
+@0006                               v195 = ishl v188, v194  ; v194 = 13
+@0006                               v196 = iconst.i32 12
+@0006                               v197 = ishl v189, v196  ; v196 = 12
+@0006                               v198 = bor v191, v193
+@0006                               v199 = bor v198, v195
+@0006                               v200 = bor v199, v197
+@0006                               v201 = iconst.i32 0x0001_f000
+@0006                               v202 = bnot v201  ; v201 = 0x0001_f000
+@0006                               v203 = band.i32 v109, v202
+@0006                               v204 = bor v203, v200
+@0006                               v205 = iconst.i32 4
+@0006                               v206 = iadd v178, v205  ; v205 = 4
+@0007                               v207 = iconst.i32 8
+@0007                               v208 = iadd.i32 v112, v207  ; v207 = 8
+@0007                               v209 = extractlane v179, 0
+@0007                               v210 = load.i32 notrap v1+872
+@0007                               v211 = call fn11(v0, v208, v210, v209)
+@0007                               brif v211, block38, block37
 
                                 block37 cold:
-@0007                               store.i32 notrap aligned v169, v1+864
-@0007                               v173 = iconst.i16 768
-@0007                               store.f64x2 notrap aligned v147, v1+248
-@0007                               store.i32 notrap aligned v168, v1
-@0007                               store.f64x2 notrap aligned v39, v1+168
-@0007                               store.i32 notrap aligned v167, v1+652
-@0007                               store.f64x2 notrap aligned v69, v1+232
-@0007                               store.f64x2 notrap aligned v145, v1+216
-@0007                               store.f64x2 notrap aligned v67, v1+200
-@0007                               store.f64x2 notrap aligned v129, v1+184
-@0007                               call fn0(v1, v173)  ; v173 = 768
-@0007                               v174 = global_value.i64 gv9
-@0007                               v175 = iconst.i64 0
-@0007                               v176 = iconst.i32 0x0010_0008
-@0007                               v177 = call fn1(v0, v174, v175, v176)  ; v175 = 0, v176 = 0x0010_0008
-@0007                               v178 = icmp_imm ne v177, 0
-@0007                               brif v178, block39, block40
+@0007                               store.i32 notrap v208, v1+864
+@0007                               v212 = iconst.i16 768
+@0007                               store.f64x2 notrap v179, v1+248
+@0007                               store.i32 notrap v206, v1
+@0007                               store.f64x2 notrap v46, v1+168
+@0007                               store.i32 notrap v204, v1+652
+@0007                               store.f64x2 notrap v83, v1+232
+@0007                               store.f64x2 notrap v176, v1+216
+@0007                               store.f64x2 notrap v80, v1+200
+@0007                               store.f64x2 notrap v156, v1+184
+@0007                               call fn0(v1, v212)  ; v212 = 768
+@0007                               v213 = symbol_value.i64 gv9
+@0007                               v214 = iconst.i64 0
+@0007                               v215 = iconst.i32 0x0010_0008
+@0007                               v216 = call fn1(v0, v213, v214, v215)  ; v214 = 0, v215 = 0x0010_0008
+@0007                               v217 = iconst.i64 0
+@0007                               v218 = icmp ne v216, v217  ; v217 = 0
+@0007                               brif v218, block39, block40
 
                                 block39:
-@0008                               return_call_indirect.i64 sig0, v177(v0, v1, v2)
+@0008                               return_call_indirect.i64 sig0, v216(v0, v1, v2)
 
                                 block40 cold:
 @0008                               return
 
                                 block38:
-@0007                               v179 = uextend.i32 v172
-@0007                               v180 = iadd_imm.i32 v168, 4
-                                    store.f64x2 notrap aligned v147, v1+248
-                                    store notrap aligned v180, v1
-                                    store.f64x2 notrap aligned v39, v1+168
-                                    store.i32 notrap aligned v167, v1+652
-                                    store.f64x2 notrap aligned v69, v1+232
-                                    store.f64x2 notrap aligned v145, v1+216
-                                    store.f64x2 notrap aligned v67, v1+200
-                                    store.f64x2 notrap aligned v129, v1+184
-                                    v181 = global_value.i64 gv10
-                                    v182 = iconst.i64 0
-                                    v183 = iconst.i32 0x0010_0008
-                                    v184 = call fn1(v0, v181, v182, v183)  ; v182 = 0, v183 = 0x0010_0008
-                                    v185 = icmp_imm ne v184, 0
-                                    brif v185, block41, block42
+@0007                               v219 = uextend.i32 v211
+@0007                               v220 = iconst.i32 4
+@0007                               v221 = iadd.i32 v206, v220  ; v220 = 4
+                                    store.f64x2 notrap v179, v1+248
+                                    store notrap v221, v1
+                                    store.f64x2 notrap v46, v1+168
+                                    store.i32 notrap v204, v1+652
+                                    store.f64x2 notrap v83, v1+232
+                                    store.f64x2 notrap v176, v1+216
+                                    store.f64x2 notrap v80, v1+200
+                                    store.f64x2 notrap v156, v1+184
+                                    v222 = symbol_value.i64 gv10
+                                    v223 = iconst.i64 0
+                                    v224 = iconst.i32 0x0010_0008
+                                    v225 = call fn1(v0, v222, v223, v224)  ; v223 = 0, v224 = 0x0010_0008
+                                    v226 = iconst.i64 0
+                                    v227 = icmp ne v225, v226  ; v226 = 0
+                                    brif v227, block41, block42
 
                                 block41:
-@0008                               return_call_indirect.i64 sig0, v184(v0, v1, v2)
+@0008                               return_call_indirect.i64 sig0, v225(v0, v1, v2)
 
                                 block42 cold:
 @0008                               return

@@ -61,7 +61,7 @@ fn coord_float(parser: &mut ParserBuilder, ptr: ir::Value) -> ir::Value {
     parser
         .bd
         .ins()
-        .bitcast(ir::types::F32, ir::MemFlags::new(), value)
+        .bitcast(ir::types::F32, ir::MemFlagsData::new(), value)
 }
 
 /// Parses a vec2/vec3 with components encoded as U8/I8/U16/I16.
@@ -126,7 +126,7 @@ fn vec_int(
 
         parser.bd.ins().bitcast(
             ir::types::I32X4,
-            ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+            ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
             shuffled,
         )
     } else {
@@ -175,14 +175,14 @@ fn vec_int(
 
         parser.bd.ins().bitcast(
             ir::types::I32X4,
-            ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+            ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
             shuffled,
         )
     };
 
     // 03. sign extend if needed and convert to F32X4
     let vector = if signed {
-        let vector = parser.bd.ins().sshr_imm(vector, 32 - ty.bits() as i64);
+        let vector = parser.bd.ins().sshr_imm_u(vector, 32 - ty.bits() as i64);
         parser.bd.ins().fcvt_from_sint(ir::types::F32X4, vector)
     } else {
         parser.bd.ins().fcvt_from_uint(ir::types::F32X4, vector)
@@ -225,7 +225,7 @@ fn vec_float(parser: &mut ParserBuilder, ptr: ir::Value, triplet: bool) -> [ir::
 
     let bytes = parser.bd.ins().bitcast(
         ir::types::I8X16,
-        ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+        ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
         vector,
     );
 
@@ -248,7 +248,7 @@ fn vec_float(parser: &mut ParserBuilder, ptr: ir::Value, triplet: bool) -> [ir::
     // 03. convert to F32X4
     let vector = parser.bd.ins().bitcast(
         ir::types::F32X4,
-        ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+        ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
         shuffled,
     );
 
@@ -287,7 +287,7 @@ fn rgba4444(parser: &mut ParserBuilder, ptr: ir::Value) -> ir::Value {
     let shuffled = parser.bd.ins().swizzle(bytes, shuffle_mask);
     let vector = parser.bd.ins().bitcast(
         ir::types::I32X4,
-        ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+        ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
         shuffled,
     );
 
@@ -310,7 +310,7 @@ fn rgba4444(parser: &mut ParserBuilder, ptr: ir::Value) -> ir::Value {
         .ins()
         .scalar_to_vector(ir::types::I32X4, band_value);
     let low_nibbles = parser.bd.ins().band(vector, band_value);
-    let high_nibbles = parser.bd.ins().ushr_imm(vector, 4);
+    let high_nibbles = parser.bd.ins().ushr_imm_u(vector, 4);
     let rgba = parser
         .bd
         .ins()
@@ -350,7 +350,7 @@ fn rgb6666(parser: &mut ParserBuilder, ptr: ir::Value) -> ir::Value {
     let shuffled = parser.bd.ins().swizzle(bytes, shuffle_mask);
     let vector = parser.bd.ins().bitcast(
         ir::types::I32X4,
-        ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+        ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
         shuffled,
     );
 
@@ -371,7 +371,7 @@ fn rgb6666(parser: &mut ParserBuilder, ptr: ir::Value) -> ir::Value {
 
     let mul_const = parser.bd.ins().vconst(ir::types::I32X4, mul_const);
     let vector = parser.bd.ins().imul(vector, mul_const);
-    let vector = parser.bd.ins().ushr_imm(vector, 18);
+    let vector = parser.bd.ins().ushr_imm_u(vector, 18);
 
     let mask = parser.bd.ins().iconst(ir::types::I32, 0x3F);
     let mask = parser.bd.ins().splat(ir::types::I32X4, mask);
@@ -412,7 +412,7 @@ fn rgba8888(parser: &mut ParserBuilder, ptr: ir::Value) -> ir::Value {
 
     let vector = parser.bd.ins().bitcast(
         ir::types::I32X4,
-        ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+        ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
         shuffled,
     );
 
@@ -451,7 +451,7 @@ fn rgb565(parser: &mut ParserBuilder, ptr: ir::Value) -> ir::Value {
 
     let vector = parser.bd.ins().bitcast(
         ir::types::I32X4,
-        ir::MemFlags::new().with_endianness(ir::Endianness::Little),
+        ir::MemFlagsData::new().with_endianness(ir::Endianness::Little),
         shuffled,
     );
 
@@ -489,7 +489,7 @@ fn rgb565(parser: &mut ParserBuilder, ptr: ir::Value) -> ir::Value {
     let and_const = parser.bd.ins().vconst(ir::types::I32X4, and_const);
 
     let vector = parser.bd.ins().imul(vector, mul_const);
-    let vector = parser.bd.ins().ushr_imm(vector, 11);
+    let vector = parser.bd.ins().ushr_imm_u(vector, 11);
     let vector = parser.bd.ins().band(vector, and_const);
 
     // 04. convert to F32X4

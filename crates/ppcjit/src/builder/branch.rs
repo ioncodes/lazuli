@@ -54,7 +54,7 @@ impl BlockBuilder<'_> {
         };
 
         if meta.call() {
-            let ret_addr = self.bd.ins().iadd_imm(current_pc, 4);
+            let ret_addr = self.bd.ins().iadd_imm_u(current_pc, 4);
             self.set(SPR::LR, ret_addr);
         }
 
@@ -125,7 +125,7 @@ impl BlockBuilder<'_> {
 
         if !options.ignore_ctr() {
             let ctr = self.get(SPR::CTR);
-            let ctr = self.bd.ins().iadd_imm(ctr, -1);
+            let ctr = self.bd.ins().iadd_imm_s(ctr, -1);
             self.set(SPR::CTR, ctr);
 
             let condition = match options.ctr_cond() {
@@ -133,7 +133,7 @@ impl BlockBuilder<'_> {
                 CtrCond::EqZero => ir::condcodes::IntCC::Equal,
             };
 
-            let condition = self.bd.ins().icmp_imm(condition, ctr, 0);
+            let condition = self.bd.ins().icmp_imm_u(condition, ctr, 0);
             branch = self.bd.ins().band(branch, condition);
         }
 
