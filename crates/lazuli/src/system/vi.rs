@@ -379,6 +379,13 @@ impl Interface {
         const { assert!(N < 4) };
         self.interrupts[N] = new.with_status(self.interrupts[N].status() && new.status());
     }
+
+    pub fn any_interrupt(&self) -> bool {
+        self.interrupts
+            .iter()
+            .map(|x| x.enable() && x.status())
+            .any(std::convert::identity)
+    }
 }
 
 pub fn update_display_interrupts(sys: &mut System) {
@@ -386,22 +393,18 @@ pub fn update_display_interrupts(sys: &mut System) {
     let mut raised = false;
     for interrupt in sys.video.interrupts.iter_mut() {
         interrupt.set_status(false);
-        if !interrupt.enable() {
-            continue;
-        }
-
         if interrupt.horizontal_count().value() > video_width {
             continue;
         }
 
-        sys.video.horizontal_count = sys
-            .video
-            .horizontal_count
-            .max(interrupt.horizontal_count().value());
-
         if interrupt.vertical_count().value() == sys.video.vertical_count {
-            raised = true;
+            sys.video.horizontal_count = sys
+                .video
+                .horizontal_count
+                .max(interrupt.horizontal_count().value());
+
             interrupt.set_status(true);
+            raised = true;
         }
     }
 
@@ -411,8 +414,6 @@ pub fn update_display_interrupts(sys: &mut System) {
 }
 
 pub fn vertical_count(sys: &mut System) {
-    self::update_display_interrupts(sys);
-
     let start_of_top_field = sys.video.vertical_count == 1;
     let start_of_bottom_field = sys.video.display_config.field_mode() == FieldMode::Double
         && sys.video.vertical_count as u32 == sys.video.lines_per_frame() / 2 + 1;
@@ -427,6 +428,8 @@ pub fn vertical_count(sys: &mut System) {
     if sys.video.vertical_count as u32 > sys.video.lines_per_frame() {
         sys.video.vertical_count = 1;
     }
+
+    self::update_display_interrupts(sys);
 
     if sys
         .video

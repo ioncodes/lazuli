@@ -9,10 +9,11 @@ use strum::FromRepr;
 use zerocopy::IntoBytes;
 
 use crate::Primitive;
+use crate::modules::render;
 use crate::stream::{BinRingBuffer, BinaryStream};
-use crate::system::System;
 use crate::system::gx::cmd::attributes::{AttributeDescriptor, AttributeMode};
-use crate::system::gx::{self, Gpu, Reg as GxReg, Topology};
+use crate::system::gx::{self, Reg as GxReg, Topology};
+use crate::system::{System, pi};
 
 /// A command processor register.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, FromRepr)]
@@ -104,23 +105,23 @@ impl Reg {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Operation {
     #[default]
-    NOP               = 0b0_0000,
-    SetCP             = 0b0_0001,
-    SetXF             = 0b0_0010,
-    IndexedSetXFA     = 0b0_0100,
-    IndexedSetXFB     = 0b0_0101,
-    IndexedSetXFC     = 0b0_0110,
-    IndexedSetXFD     = 0b0_0111,
-    Call              = 0b0_1000,
-    InvalidateVertexCache = 0b0_1001,
-    SetBP             = 0b0_1100,
-    DrawQuadList      = 0b1_0000,
-    DrawTriangleList  = 0b1_0010,
-    DrawTriangleStrip = 0b1_0011,
-    DrawTriangleFan   = 0b1_0100,
-    DrawLineList      = 0b1_0101,
-    DrawLineStrip     = 0b1_0110,
-    DrawPointList     = 0b1_0111,
+    NOP                = 0b0_0000,
+    SetCP              = 0b0_0001,
+    SetXF              = 0b0_0010,
+    IndexedSetXFA      = 0b0_0100,
+    IndexedSetXFB      = 0b0_0101,
+    IndexedSetXFC      = 0b0_0110,
+    IndexedSetXFD      = 0b0_0111,
+    Call               = 0b0_1000,
+    InvalidateVtxCache = 0b0_1001,
+    SetBP              = 0b0_1100,
+    DrawQuadList       = 0b1_0000,
+    DrawTriangleList   = 0b1_0010,
+    DrawTriangleStrip  = 0b1_0011,
+    DrawTriangleFan    = 0b1_0100,
+    DrawLineList       = 0b1_0101,
+    DrawLineStrip      = 0b1_0110,
+    DrawPointList      = 0b1_0111,
 }
 
 #[bitos(8)]
@@ -135,7 +136,7 @@ pub struct Opcode {
 #[derive(Debug)]
 pub enum Command {
     Nop,
-    InvalidateVertexCache,
+    InvalidateVtxCache,
     Call {
         address: Address,
         length: u32,
@@ -183,15 +184,15 @@ pub enum Command {
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Status {
     #[bits(0)]
-    pub fifo_overflow: bool,
+    pub overflow: bool,
     #[bits(1)]
-    pub fifo_underflow: bool,
+    pub underflow: bool,
     #[bits(2)]
     pub read_idle: bool,
     #[bits(3)]
     pub write_idle: bool,
     #[bits(4)]
-    pub breakpoint_interrupt: bool,
+    pub breakpoint: bool,
 }
 
 /// CP control register
@@ -199,17 +200,17 @@ pub struct Status {
 #[derive(Debug, Clone, Copy)]
 pub struct Control {
     #[bits(0)]
-    pub fifo_read_enable: bool,
+    pub read_enable: bool,
     #[bits(1)]
-    pub fifo_breakpoint_enable: bool,
+    pub breakpoint_enable: bool,
     #[bits(2)]
-    pub fifo_overflow_interrupt_enable: bool,
+    pub overflow_interrupt_enable: bool,
     #[bits(3)]
-    pub fifo_underflow_interrupt_enable: bool,
+    pub underflow_interrupt_enable: bool,
     #[bits(4)]
     pub linked_mode: bool,
     #[bits(5)]
-    pub fifo_breakpoint_interrupt_enable: bool,
+    pub breakpoint_interrupt_enable: bool,
 }
 
 impl Default for Control {
@@ -221,21 +222,26 @@ impl Default for Control {
 #[derive(Debug, Clone, Default)]
 pub struct Fifo {
     pub start: Address,
-    pub end: Address,
+    pub end_minus_4: Address,
     pub high_mark: u32,
     pub low_mark: u32,
     pub write_ptr: Address,
     pub read_ptr: Address,
+    pub breakpoint_ptr: Address,
 }
 
 impl Fifo {
+    pub fn end(&self) -> Address {
+        self.end_minus_4 + 4
+    }
+
     /// The FIFO count.
     pub fn count(&self) -> u32 {
         let count = if self.write_ptr >= self.read_ptr {
             self.write_ptr - self.read_ptr
         } else {
             let start = self.write_ptr - self.start;
-            let end = self.end - self.read_ptr;
+            let end = self.end() - self.read_ptr;
             start + end
         };
 
@@ -243,7 +249,7 @@ impl Fifo {
             count >= 0,
             "start: {}, end: {}; write: {}, read: {}",
             self.start,
-            self.end,
+            self.end(),
             self.write_ptr,
             self.read_ptr,
         );
@@ -387,170 +393,186 @@ pub struct Interface {
     pub fifo: Fifo,
     pub internal: Internal,
     pub queue: BinRingBuffer,
+    pub call_len: u32,
 }
 
 impl Interface {
+    pub fn any_interrupt(&self) -> bool {
+        let overflow = self.control.overflow_interrupt_enable() && self.status.overflow();
+        let underflow = self.control.underflow_interrupt_enable() && self.status.underflow();
+        let breakpoint = self.control.breakpoint_interrupt_enable() && self.status.breakpoint();
+        overflow || underflow || breakpoint
+    }
+
     /// Write a value to the clear register.
     pub fn write_clear(&mut self, value: u16) {
         if value.bit(0) {
-            self.status.set_fifo_overflow(false);
+            self.status.set_overflow(false);
         }
 
         if value.bit(1) {
-            self.status.set_fifo_underflow(false);
+            self.status.set_underflow(false);
         }
     }
 }
 
-impl Gpu {
-    /// Reads a command from the command queue.
-    pub fn read_command(&mut self) -> Option<Command> {
-        let mut reader = self.cmd.queue.reader();
+/// Reads a command from the GX's internal command queue.
+pub fn next(sys: &mut System) -> Option<Command> {
+    let mut reader = sys.gpu.cmd.queue.reader();
 
-        let opcode = Opcode::from_bits(reader.read_be()?);
-        let Some(operation) = opcode.operation() else {
-            panic!("unknown opcode 0x{:02X?}", opcode.0);
-        };
+    let opcode = Opcode::from_bits(reader.read_be()?);
+    let Some(operation) = opcode.operation() else {
+        panic!("unknown opcode 0x{:02X?}", opcode.0);
+    };
 
-        let command = match operation {
-            Operation::NOP => Command::Nop,
-            Operation::SetCP => {
-                let register = reader.read_be::<u8>()?;
-                let value = reader.read_be::<u32>()?;
+    let command = match operation {
+        Operation::NOP => Command::Nop,
+        Operation::SetCP => {
+            let register = reader.read_be::<u8>()?;
+            let value = reader.read_be::<u32>()?;
 
-                let Some(register) = Reg::from_repr(register) else {
-                    panic!("unknown internal CP register {register:02X}");
-                };
+            let Some(register) = Reg::from_repr(register) else {
+                panic!("unknown internal CP register {register:02X}");
+            };
 
-                Command::SetCP { register, value }
+            Command::SetCP { register, value }
+        }
+        Operation::SetXF => {
+            let length = reader.read_be::<u16>()? as u32 + 1;
+            if reader.remaining() < 4 * length as usize {
+                return None;
             }
-            Operation::SetXF => {
-                let length = reader.read_be::<u16>()? as u32 + 1;
-                if reader.remaining() < 4 * length as usize {
-                    return None;
-                }
 
-                let start = reader.read_be::<u16>()?;
-                let mut values = Vec::with_capacity(length as usize);
-                for _ in 0..length {
-                    values.push(reader.read_be::<u32>()?);
-                }
-
-                Command::SetXF { start, values }
+            let start = reader.read_be::<u16>()?;
+            let mut values = Vec::with_capacity(length as usize);
+            for _ in 0..length {
+                values.push(reader.read_be::<u32>()?);
             }
-            Operation::IndexedSetXFA => {
-                let config = reader.read_be::<u32>()?;
-                let base = config.bits(0, 12) as u16;
-                let length = config.bits(12, 16) as u8 + 1;
-                let index = config.bits(16, 32) as u16;
 
-                Command::IndexedSetXFA {
-                    base,
-                    length,
-                    index,
-                }
+            Command::SetXF { start, values }
+        }
+        Operation::IndexedSetXFA => {
+            let config = reader.read_be::<u32>()?;
+            let base = config.bits(0, 12) as u16;
+            let length = config.bits(12, 16) as u8 + 1;
+            let index = config.bits(16, 32) as u16;
+
+            Command::IndexedSetXFA {
+                base,
+                length,
+                index,
             }
-            Operation::IndexedSetXFB => {
-                let config = reader.read_be::<u32>()?;
-                let base = config.bits(0, 12) as u16;
-                let length = config.bits(12, 16) as u8 + 1;
-                let index = config.bits(16, 32) as u16;
+        }
+        Operation::IndexedSetXFB => {
+            let config = reader.read_be::<u32>()?;
+            let base = config.bits(0, 12) as u16;
+            let length = config.bits(12, 16) as u8 + 1;
+            let index = config.bits(16, 32) as u16;
 
-                Command::IndexedSetXFB {
-                    base,
-                    length,
-                    index,
-                }
+            Command::IndexedSetXFB {
+                base,
+                length,
+                index,
             }
-            Operation::IndexedSetXFC => {
-                let config = reader.read_be::<u32>()?;
-                let base = config.bits(0, 12) as u16;
-                let length = config.bits(12, 16) as u8 + 1;
-                let index = config.bits(16, 32) as u16;
+        }
+        Operation::IndexedSetXFC => {
+            let config = reader.read_be::<u32>()?;
+            let base = config.bits(0, 12) as u16;
+            let length = config.bits(12, 16) as u8 + 1;
+            let index = config.bits(16, 32) as u16;
 
-                Command::IndexedSetXFC {
-                    base,
-                    length,
-                    index,
-                }
+            Command::IndexedSetXFC {
+                base,
+                length,
+                index,
             }
-            Operation::IndexedSetXFD => {
-                let config = reader.read_be::<u32>()?;
-                let base = config.bits(0, 12) as u16;
-                let length = config.bits(12, 16) as u8 + 1;
-                let index = config.bits(16, 32) as u16;
+        }
+        Operation::IndexedSetXFD => {
+            let config = reader.read_be::<u32>()?;
+            let base = config.bits(0, 12) as u16;
+            let length = config.bits(12, 16) as u8 + 1;
+            let index = config.bits(16, 32) as u16;
 
-                Command::IndexedSetXFD {
-                    base,
-                    length,
-                    index,
-                }
+            Command::IndexedSetXFD {
+                base,
+                length,
+                index,
             }
-            Operation::Call => {
-                let address = Address(reader.read_be::<u32>()?);
-                let length = reader.read_be::<u32>()?;
+        }
+        Operation::Call => {
+            let address = Address(reader.read_be::<u32>()?);
+            let length = reader.read_be::<u32>()?;
 
-                Command::Call { address, length }
+            Command::Call { address, length }
+        }
+        Operation::InvalidateVtxCache => Command::InvalidateVtxCache,
+        Operation::SetBP => {
+            let register = reader.read_be::<u8>()?;
+            let value = u32::from_be_bytes([
+                0,
+                reader.read_be::<u8>()?,
+                reader.read_be::<u8>()?,
+                reader.read_be::<u8>()?,
+            ]);
+
+            let Some(register) = GxReg::from_repr(register) else {
+                panic!("unknown internal GX register {register:02X}");
+            };
+
+            Command::SetBP { register, value }
+        }
+        Operation::DrawQuadList
+        | Operation::DrawTriangleList
+        | Operation::DrawTriangleStrip
+        | Operation::DrawTriangleFan
+        | Operation::DrawLineList
+        | Operation::DrawLineStrip
+        | Operation::DrawPointList => {
+            let vertex_count = reader.read_be::<u16>()?;
+            let vertex_size = sys.gpu.cmd.internal.vertex_size(opcode.vat_index().value());
+
+            let attribute_stream_size = vertex_count as usize * vertex_size as usize;
+            if reader.remaining() < attribute_stream_size {
+                return None;
             }
-            Operation::InvalidateVertexCache => Command::InvalidateVertexCache,
-            Operation::SetBP => {
-                let register = reader.read_be::<u8>()?;
-                let value = u32::from_be_bytes([
-                    0,
-                    reader.read_be::<u8>()?,
-                    reader.read_be::<u8>()?,
-                    reader.read_be::<u8>()?,
-                ]);
 
-                let Some(register) = GxReg::from_repr(register) else {
-                    panic!("unknown internal GX register {register:02X}");
-                };
+            let vertex_attributes = reader.read_bytes(attribute_stream_size)?;
+            let vertex_attributes = VertexAttributeStream {
+                table: opcode.vat_index().value(),
+                count: vertex_count,
+                data: vertex_attributes,
+            };
 
-                Command::SetBP { register, value }
+            let topology = match operation {
+                Operation::DrawQuadList => Topology::QuadList,
+                Operation::DrawTriangleList => Topology::TriangleList,
+                Operation::DrawTriangleStrip => Topology::TriangleStrip,
+                Operation::DrawTriangleFan => Topology::TriangleFan,
+                Operation::DrawLineList => Topology::LineList,
+                Operation::DrawLineStrip => Topology::LineStrip,
+                Operation::DrawPointList => Topology::PointList,
+                _ => unreachable!(),
+            };
+
+            Command::Draw {
+                topology,
+                vertex_attributes,
             }
-            Operation::DrawQuadList
-            | Operation::DrawTriangleList
-            | Operation::DrawTriangleStrip
-            | Operation::DrawTriangleFan
-            | Operation::DrawLineList
-            | Operation::DrawLineStrip
-            | Operation::DrawPointList => {
-                let vertex_count = reader.read_be::<u16>()?;
-                let vertex_size = self.cmd.internal.vertex_size(opcode.vat_index().value());
+        }
+    };
 
-                let attribute_stream_size = vertex_count as usize * vertex_size as usize;
-                if reader.remaining() < attribute_stream_size {
-                    return None;
-                }
+    if sys.gpu.cmd.call_len != 0 {
+        if sys.gpu.cmd.call_len == reader.consumed() as u32 {
+            sys.modules
+                .render
+                .exec(render::Action::Debug(render::DebugAction::DisplayListEnd));
+        }
 
-                let vertex_attributes = reader.read_bytes(attribute_stream_size)?;
-                let vertex_attributes = VertexAttributeStream {
-                    table: opcode.vat_index().value(),
-                    count: vertex_count,
-                    data: vertex_attributes,
-                };
-
-                let topology = match operation {
-                    Operation::DrawQuadList => Topology::QuadList,
-                    Operation::DrawTriangleList => Topology::TriangleList,
-                    Operation::DrawTriangleStrip => Topology::TriangleStrip,
-                    Operation::DrawTriangleFan => Topology::TriangleFan,
-                    Operation::DrawLineList => Topology::LineList,
-                    Operation::DrawLineStrip => Topology::LineStrip,
-                    Operation::DrawPointList => Topology::PointList,
-                    _ => unreachable!(),
-                };
-
-                Command::Draw {
-                    topology,
-                    vertex_attributes,
-                }
-            }
-        };
-
-        reader.finish();
-        Some(command)
+        sys.gpu.cmd.call_len -= reader.consumed() as u32;
     }
+
+    reader.finish();
+    Some(command)
 }
 
 /// Sets the value of an internal command processor register.
@@ -648,7 +670,8 @@ fn fifo_pop(sys: &mut System) -> u8 {
 
     let data = sys.read_phys_slow::<u8>(sys.gpu.cmd.fifo.read_ptr);
     sys.gpu.cmd.fifo.read_ptr += 1;
-    if sys.gpu.cmd.fifo.read_ptr > sys.gpu.cmd.fifo.end {
+
+    if sys.gpu.cmd.fifo.read_ptr >= sys.gpu.cmd.fifo.end() {
         std::hint::cold_path();
         sys.gpu.cmd.fifo.read_ptr = sys.gpu.cmd.fifo.start;
     }
@@ -656,20 +679,31 @@ fn fifo_pop(sys: &mut System) -> u8 {
     data
 }
 
-/// Consumes commands available in the CP FIFO.
-pub fn consume(sys: &mut System) {
-    if !sys.gpu.cmd.control.fifo_read_enable() {
+/// Consumes commands available in the CP FIFO and processes them.
+pub fn process(sys: &mut System) {
+    if !sys.gpu.cmd.control.read_enable() {
         return;
     }
 
     while sys.gpu.cmd.fifo.count() > 0 {
         let data = self::fifo_pop(sys);
         sys.gpu.cmd.queue.push_be(data);
+
+        if sys.gpu.cmd.control.breakpoint_enable()
+            && sys.gpu.cmd.fifo.read_ptr == sys.gpu.cmd.fifo.breakpoint_ptr
+        {
+            sys.gpu.cmd.status.set_breakpoint(true);
+            sys.gpu.cmd.control.set_read_enable(false);
+            sys.scheduler.schedule_now(pi::check_interrupts);
+            break;
+        }
     }
+
+    self::process_inner(sys);
+    sys.scheduler.schedule(1024, gx::cmd::process);
 }
 
-/// Process consumed CP commands until the queue is either empty or incomplete.
-pub fn process(sys: &mut System) {
+fn process_inner(sys: &mut System) {
     let current_token = sys.gpu.pix.token;
     loop {
         let draw_done = sys.gpu.pix.interrupt.finish();
@@ -685,17 +719,17 @@ pub fn process(sys: &mut System) {
             break;
         }
 
-        let Some(cmd) = sys.gpu.read_command() else {
+        let Some(cmd) = self::next(sys) else {
             break;
         };
 
-        if !matches!(cmd, Command::Nop | Command::InvalidateVertexCache) {
+        if !matches!(cmd, Command::Nop | Command::InvalidateVtxCache) {
             tracing::debug!("processing {:02X?}", cmd);
         }
 
         match cmd {
             Command::Nop => (),
-            Command::InvalidateVertexCache => (),
+            Command::InvalidateVtxCache => (),
             Command::Call { address, length } => gx::call(sys, address, length),
             Command::SetCP { register, value } => self::set_register(sys, register, value),
             Command::SetBP { register, value } => gx::set_register(sys, register, value),
@@ -744,13 +778,11 @@ pub fn process(sys: &mut System) {
             }
         }
     }
-
-    sys.scheduler.schedule(1 << 16, self::process);
 }
 
 /// Synchronizes the CP fifo to the PI fifo.
 pub fn sync_to_pi(sys: &mut System) {
     sys.gpu.cmd.fifo.start = sys.processor.fifo_start;
-    sys.gpu.cmd.fifo.end = sys.processor.fifo_end;
+    sys.gpu.cmd.fifo.end_minus_4 = sys.processor.fifo_end_minus_4;
     sys.gpu.cmd.fifo.write_ptr = sys.processor.fifo_current.address();
 }

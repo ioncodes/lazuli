@@ -25,7 +25,7 @@ use crate::{
     NAMESPACE_USER_HOOKS, Sequence,
 };
 
-const MEMFLAGS: ir::MemFlags = ir::MemFlags::trusted();
+const MEMFLAGS: ir::MemFlags = ir::MemFlags::new().with_notrap();
 const MEMFLAGS_READONLY: ir::MemFlags = MEMFLAGS.with_can_move().with_readonly();
 
 // NOTE: make sure to keep this up to date if anything else is not just 32 bits
@@ -362,6 +362,10 @@ impl<'ctx> BlockBuilder<'ctx> {
     fn get(&mut self, reg: impl Into<Reg>) -> ir::Value {
         let reg = reg.into();
 
+        if matches!(reg, Reg::FPR(_)) {
+            assert!(self.floats_checked);
+        }
+
         if let Some(reg) = self.cache.get(&reg) {
             return reg.value;
         }
@@ -387,7 +391,10 @@ impl<'ctx> BlockBuilder<'ctx> {
 
         let value_ty = self.bd.func.dfg.value_type(value);
         match reg {
-            Reg::FPR(_) => assert_eq!(value_ty, ir::types::F64X2),
+            Reg::FPR(_) => {
+                assert!(self.floats_checked);
+                assert_eq!(value_ty, ir::types::F64X2);
+            }
             _ => assert_eq!(value_ty, ir::types::I32),
         }
 
@@ -659,6 +666,7 @@ impl<'ctx> BlockBuilder<'ctx> {
             Opcode::Orc => self.orc(ins),
             Opcode::Ori => self.ori(ins),
             Opcode::Oris => self.oris(ins),
+            Opcode::PsAbs => self.ps_abs(ins),
             Opcode::PsAdd => self.ps_add(ins),
             Opcode::PsCmpo0 => self.ps_cmpo0(ins),
             Opcode::PsCmpo1 => self.ps_cmpo1(ins),
@@ -677,6 +685,7 @@ impl<'ctx> BlockBuilder<'ctx> {
             Opcode::PsMul => self.ps_mul(ins),
             Opcode::PsMuls0 => self.ps_muls0(ins),
             Opcode::PsMuls1 => self.ps_muls1(ins),
+            Opcode::PsNabs => self.ps_nabs(ins),
             Opcode::PsNeg => self.ps_neg(ins),
             Opcode::PsNmadd => self.ps_nmadd(ins),
             Opcode::PsNmsub => self.ps_nmsub(ins),
@@ -688,9 +697,11 @@ impl<'ctx> BlockBuilder<'ctx> {
             Opcode::PsSum1 => self.ps_sum1(ins),
             Opcode::PsqL => self.psq_l(ins),
             Opcode::PsqLu => self.psq_lu(ins),
+            Opcode::PsqLux => self.psq_lux(ins),
             Opcode::PsqLx => self.psq_lx(ins),
             Opcode::PsqSt => self.psq_st(ins),
             Opcode::PsqStu => self.psq_stu(ins),
+            Opcode::PsqStux => self.psq_stux(ins),
             Opcode::PsqStx => self.psq_stx(ins),
             Opcode::Rfi => self.rfi(ins),
             Opcode::Rlwimi => self.rlwimi(ins),
