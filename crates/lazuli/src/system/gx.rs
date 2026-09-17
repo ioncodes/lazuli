@@ -1096,6 +1096,10 @@ fn extract_vertices(sys: &mut System, stream: &VertexAttributeStream) -> VertexS
 }
 
 fn draw(sys: &mut System, topology: Topology, stream: &VertexAttributeStream) {
+    if stream.count() == 0 {
+        return;
+    }
+
     if std::mem::take(&mut sys.gpu.xform.internal.viewport_dirty) {
         let viewport = &sys.gpu.xform.internal.viewport;
         let viewport = render::Viewport {
